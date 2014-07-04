@@ -102,12 +102,21 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
       'edit all contacts',
     ),
   );
+  $permissions['entity_tag'] = array(
+    'get' => array(
+      'access CiviCRM',
+      'view all contacts',
+    ),
+    'default' => array(
+      'access CiviCRM',
+      'edit all contacts',
+    ),
+  );
   $permissions['email'] = $permissions['address'];
   $permissions['phone'] = $permissions['address'];
   $permissions['website'] = $permissions['address'];
   $permissions['im'] = $permissions['address'];
   $permissions['loc_block'] = $permissions['address'];
-  $permissions['entity_tag'] = $permissions['address'];
   $permissions['note'] = $permissions['address'];
 
   // Activity permissions
