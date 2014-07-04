@@ -278,6 +278,9 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
           CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')
       ) {
         $this->from($entity);
+        if (strpos($entity, 'log_civicrm_activity_for_')===0) {
+            continue;
+        }
         $sql = $this->buildQuery(FALSE);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
         $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
