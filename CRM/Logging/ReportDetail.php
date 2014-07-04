@@ -124,6 +124,9 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     }
 
     foreach ($this->tables as $table) {
+      if ($table == 'civicrm_activity') {
+          continue;
+      }
       $rows = array_merge($rows, $this->diffsInTable($table));
     }
   }
