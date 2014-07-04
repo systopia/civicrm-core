@@ -957,7 +957,7 @@ class CRM_Contribute_BAO_Query {
 
     $statusValues = CRM_Core_OptionGroup::values("contribution_status");
     // Remove status values that are only used for recurring contributions or pledges (In Progress, Overdue).
-    unset($statusValues['5'], $statusValues['6']);
+    unset($statusValues['7'], $statusValues['6']);
 
     foreach ($statusValues as $key => $val) {
       $status[] = $form->createElement('advcheckbox', $key, NULL, $val);
