@@ -50,7 +50,7 @@
             <div class="crm-section no-label {$form.$expressButtonName.name}-section">
               <div class="content description">
                 {$form.$expressButtonName.html}
-                <div class="description">Save time. Checkout securely. Pay without sharing your financial information. </div>
+                <div class="description">Schnell und sicher zahlen, ohne Ihre Kontodaten zu übermitteln.</div>
               </div>
             </div>
             {/if}
