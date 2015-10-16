@@ -57,7 +57,7 @@ VALUES
 INSERT INTO civicrm_navigation
  ( domain_id, label, name, url, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
- ( @domainID, '{ts escape="sql" skip="true"}Home{/ts}', 'Home', 'civicrm/dashboard?reset=1', NULL, '', NULL, 1, NULL, 0);
+ ( @domainID, '{ts escape="sql" skip="true" context="homepage"}Home{/ts}', 'Home', 'civicrm/dashboard?reset=1', NULL, '', NULL, 1, NULL, 0);
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )

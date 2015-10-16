@@ -72,7 +72,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     CRM_Utils_System::resetBreadCrumb();
     $breadcrumb = array(
       array(
-        'title' => ts('Home'),
+        'title' => ts('Home', array('context' => 'homepage')),
         'url' => CRM_Utils_System::url(),
       ),
       array(
