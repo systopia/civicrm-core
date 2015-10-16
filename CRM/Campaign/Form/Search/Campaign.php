@@ -79,10 +79,10 @@ class CRM_Campaign_Form_Search_Campaign extends CRM_Core_Form {
     $this->add('text', 'description', ts('Description'), $attributes['description']);
 
     //campaign start date.
-    $this->addDate('start_date', ts('From'), FALSE, array('formatType' => 'searchDate'));
+    $this->addDate('start_date', ts('From', array('context' => 'range')), FALSE, array('formatType' => 'searchDate'));
 
     //campaign end date.
-    $this->addDate('end_date', ts('To'), FALSE, array('formatType' => 'searchDate'));
+    $this->addDate('end_date', ts('To', array('context' => 'range')), FALSE, array('formatType' => 'searchDate'));
 
     //campaign type.
     $campaignTypes = CRM_Campaign_PseudoConstant::campaignType();

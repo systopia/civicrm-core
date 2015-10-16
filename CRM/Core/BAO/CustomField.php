@@ -824,8 +824,8 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
       case 'Text':
       case 'Link':
         if ($field->is_search_range && $search) {
-          $qf->add('text', $elementName . '_from', $label . ' ' . ts('From'), $field->attributes);
-          $qf->add('text', $elementName . '_to', ts('To'), $field->attributes);
+          $qf->add('text', $elementName . '_from', $label . ' ' . ts('From', array('context' => 'range')), $field->attributes);
+          $qf->add('text', $elementName . '_to', ts('To', array('context' => 'range')), $field->attributes);
         }
         else {
           $element = &$qf->add('text', $elementName, $label,
@@ -862,7 +862,7 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
 
       case 'Select Date':
         if ($field->is_search_range && $search) {
-          $qf->addDate($elementName . '_from', $label . ' - ' . ts('From'), FALSE,
+          $qf->addDate($elementName . '_from', $label . ' - ' . ts('From', array('context' => 'range')), FALSE,
             array(
               'format' => $field->date_format,
               'timeFormat' => $field->time_format,
@@ -872,7 +872,7 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
             )
           );
 
-          $qf->addDate($elementName . '_to', ts('To'), FALSE,
+          $qf->addDate($elementName . '_to', ts('To', array('context' => 'range')), FALSE,
             array(
               'format' => $field->date_format,
               'timeFormat' => $field->time_format,

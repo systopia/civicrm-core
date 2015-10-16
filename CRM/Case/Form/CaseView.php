@@ -522,7 +522,7 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form {
 
     // activity dates
     $form->addDate('activity_date_low_' . $form->_caseID, ts('Activity Dates - From'), FALSE, array('formatType' => 'searchDate'));
-    $form->addDate('activity_date_high_' . $form->_caseID, ts('To'), FALSE, array('formatType' => 'searchDate'));
+    $form->addDate('activity_date_high_' . $form->_caseID, ts('To', array('context' => 'range')), FALSE, array('formatType' => 'searchDate'));
 
     if (CRM_Core_Permission::check('administer CiviCRM')) {
       $form->add('checkbox', 'activity_deleted', ts('Deleted Activities'), '', FALSE, array('id' => 'activity_deleted_' . $form->_caseID));

@@ -1192,11 +1192,11 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   public function addDateRange($name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE, $displayTime = FALSE) {
     if ($displayTime) {
       $this->addDateTime($name . $from, $label, $required, array('formatType' => $dateFormat));
-      $this->addDateTime($name . $to, ts('To:'), $required, array('formatType' => $dateFormat));
+      $this->addDateTime($name . $to, ts('To:', array('context' => 'range')), $required, array('formatType' => $dateFormat));
     }
     else {
       $this->addDate($name . $from, $label, $required, array('formatType' => $dateFormat));
-      $this->addDate($name . $to, ts('To:'), $required, array('formatType' => $dateFormat));
+      $this->addDate($name . $to, ts('To:', array('context' => 'range')), $required, array('formatType' => $dateFormat));
     }
   }
 

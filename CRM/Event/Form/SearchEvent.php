@@ -74,8 +74,8 @@ class CRM_Event_Form_SearchEvent extends CRM_Core_Form {
     $searchOption = array(ts('Show Current and Upcoming Events'), ts('Search All or by Date Range'));
     $this->addRadio('eventsByDates', ts('Events by Dates'), $searchOption, array('onclick' => "return showHideByValue('eventsByDates','1','id_fromToDates','block','radio',true);"), "<br />");
 
-    $this->addDate('start_date', ts('From'), FALSE, array('formatType' => 'searchDate'));
-    $this->addDate('end_date', ts('To'), FALSE, array('formatType' => 'searchDate'));
+    $this->addDate('start_date', ts('From', array('context' => 'range')), FALSE, array('formatType' => 'searchDate'));
+    $this->addDate('end_date', ts('To', array('context' => 'range')), FALSE, array('formatType' => 'searchDate'));
 
     CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch($this);
 

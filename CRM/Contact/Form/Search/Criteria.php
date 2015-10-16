@@ -339,8 +339,8 @@ class CRM_Contact_Form_Search_Criteria {
 
       if ($addressOptions['postal_code']) {
         $attr = array('class' => 'six') + (array) CRM_Utils_Array::value('postal_code', $attributes);
-        $form->addElement('text', 'postal_code_low', NULL, $attr + array('placeholder' => ts('From')));
-        $form->addElement('text', 'postal_code_high', NULL, $attr + array('placeholder' => ts('To')));
+        $form->addElement('text', 'postal_code_low', NULL, $attr + array('placeholder' => ts('From', array('context' => 'range'))));
+        $form->addElement('text', 'postal_code_high', NULL, $attr + array('placeholder' => ts('To', array('context' => 'range'))));
       }
     }
 
