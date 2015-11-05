@@ -30,11 +30,11 @@
 
 <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="top"}
-  {if $prev}<a href="{$prev}" class="crm-hover-button action-item"><span class="icon ui-icon-triangle-1-w"></span> {ts}Previous{/ts}</a>{/if}
-  {if $next}<a href="{$next}" class="crm-hover-button action-item">{ts}Next{/ts} <span class="icon ui-icon-triangle-1-e"></span></a>{/if}
 </div>
 
 <div class="action-link">
+  {if $prev}<a href="{$prev}" class="crm-hover-button action-item"><span class="icon ui-icon-triangle-1-w"></span> {ts}Previous{/ts}</a>{/if}
+  {if $next}<a href="{$next}" class="crm-hover-button action-item">{ts}Next{/ts} <span class="icon ui-icon-triangle-1-e"></span></a>{/if}
   <a href="{$flip}" class="action-item crm-hover-button">
     <span class="icon ui-icon-shuffle"></span>
     {ts}Flip between original and duplicate contacts.{/ts}
