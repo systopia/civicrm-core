@@ -75,6 +75,9 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
         unset($this->_mapperFields[$value]);
       }
 
+      // reset highlighted fields in update mode, only the fields below are required
+      $highlightedFields = array();
+
       //modify field title only for update mode. CRM-3245
       foreach (array(
                  'contribution_id',
