@@ -397,11 +397,17 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
       }
 
       // FIXME: should use the schema titles, not redeclare them
-      $requiredFields = array(
-        $contactORContributionId == 'contribution_id' ? 'contribution_id' : 'contribution_contact_id' => $contactORContributionId == 'contribution_id' ? ts('Contribution ID') : ts('Contact ID'),
-        'total_amount' => ts('Total Amount'),
-        'financial_type' => ts('Financial Type'),
-      );
+      if ($self->_onDuplicate == CRM_Import_Parser::DUPLICATE_UPDATE) {
+        $requiredFields = array(
+            'contribution_id'         => ts('Contribution ID')
+            );
+      } else {
+        $requiredFields = array(
+            'contribution_contact_id' => ts('Contact ID'),
+            'total_amount'            => ts('Total Amount'),
+            'financial_type'          => ts('Financial Type'),
+            );
+      }
 
       foreach ($requiredFields as $field => $title) {
         if (!in_array($field, $importKeys)) {
