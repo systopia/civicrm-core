@@ -463,19 +463,19 @@
   }
 
   function showHidePayment(flag) {
-    var payment_options = cj(".payment_options-group");
-    var payment_processor = cj("div.payment_processor-section");
-    var payment_information = cj("div#payment_information");
-    if (flag) {
-      payment_options.hide();
-      payment_processor.hide();
-      payment_information.hide();
-    }
-    else {
-      payment_options.show();
-      payment_processor.show();
-      payment_information.show();
-    }
+    // var payment_options = cj(".payment_options-group");
+    // var payment_processor = cj("div.payment_processor-section");
+    // var payment_information = cj("div#payment_information");
+    // if (flag) {
+    //   payment_options.hide();
+    //   payment_processor.hide();
+    //   payment_information.hide();
+    // }
+    // else {
+    //   payment_options.show();
+    //   payment_processor.show();
+    //   payment_information.show();
+    // }
   }
   
   function skipPaymentMethod() {
