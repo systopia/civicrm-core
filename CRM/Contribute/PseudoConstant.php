@@ -40,13 +40,19 @@
 class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
 
   /**
-   * Financial types
+   * Financial types (active)
    * @var array
    */
   private static $financialType;
 
   /**
-   * Financial types
+   * Financial types (all)
+   * @var array
+   */
+  private static $allFinancialTypes;
+
+  /**
+   * Financial account types
    * @var array
    */
   private static $financialTypeAccount;
@@ -105,7 +111,7 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
   /**
    * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
    *
-   * Get all the financial types
+   * Get all the (active) financial types
    *
    *
    * @param int $id
@@ -131,6 +137,35 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
       return $result;
     }
     return self::$financialType;
+  }
+
+  /**
+   * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
+   *
+   * Get _all_ the financial types (also inactive ones)
+   *
+   *
+   * @param int $id
+   *
+   * @return array
+   *   array reference of all financial types if any
+   */
+  public static function &allFinancialTypes($id = NULL) {
+    if (!self::$allFinancialTypes) {
+      CRM_Core_PseudoConstant::populate(
+        self::$allFinancialTypes,
+        'CRM_Financial_DAO_FinancialType',
+        TRUE,
+        'name',
+        NULL
+      );
+    }
+
+    if ($id) {
+      $result = CRM_Utils_Array::value($id, self::$allFinancialTypes);
+      return $result;
+    }
+    return self::$allFinancialTypes;
   }
 
   /**
