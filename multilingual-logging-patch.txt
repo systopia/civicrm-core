@@ -1,0 +1,42 @@
+--- CRM/Admin/Form/Setting/Miscellaneous.php 2013-05-14 13:06:57.195426695 +0000
++++ CRM/Admin/Form/Setting/Miscellaneous.php 2013-05-18 13:57:12.422736686 +0000
+@@ -63,7 +63,7 @@
+     // FIXME: for now, disable logging for multilingual sites OR if triggers are not permittted
+     $domain = new CRM_Core_DAO_Domain;
+     $domain->find(TRUE);
+-    $attribs = $domain->locales || !$validTriggerPermission ? array(
++    $attribs = !$validTriggerPermission ? array(
+       'disabled' => 'disabled') : NULL;
+
+     $this->assign('validTriggerPermission', $validTriggerPermission);
+
+
+
+--- CRM/Logging/Schema.php   2013-05-14 13:06:58.047428436 +0000
++++ CRM/Logging/Schema.php   2013-05-21 16:43:33.422963452 +0000
+@@ -144,6 +144,9 @@
+       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_update");
+       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_delete");
+     }
++    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_insert", FALSE);
++    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_update", FALSE);
++    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_delete", FALSE);
+   }
+
+   /**
+
+
+
+--- CRM/Core/DAO.php 2012-02-17 22:09:14.000000000 +0000
++++ CRM/Core/DAO.php 2013-05-18 14:01:44.079056470 +0000
+@@ -1671,7 +1671,7 @@
+           $sqlString   = implode("\n", $parts['sql']);
+           $triggerName = "{$tableName}_{$whenName}_{$eventName}";
+           $triggerSQL  = "CREATE TRIGGER $triggerName $whenName $eventName ON $tableName FOR EACH ROW BEGIN $varString $sqlString END";
++          $triggerSQL = str_replace("( () AND ( @civicrm_disable_logging IS NULL OR @civicrm_disable_logging = 0 ) )", "( @civicrm_disable_logging IS NULL OR @civicrm_disable_logging = 0 )", $triggerSQL);
+-
+           CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
+           CRM_Core_DAO::executeQuery(
+             $triggerSQL,
+
+

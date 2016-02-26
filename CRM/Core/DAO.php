@@ -1671,7 +1671,7 @@ SELECT contact_id
           $sqlString   = implode("\n", $parts['sql']);
           $triggerName = "{$tableName}_{$whenName}_{$eventName}";
           $triggerSQL  = "CREATE TRIGGER $triggerName $whenName $eventName ON $tableName FOR EACH ROW BEGIN $varString $sqlString END";
-
+          $triggerSQL = str_replace("( () AND ( @civicrm_disable_logging IS NULL OR @civicrm_disable_logging = 0 ) )", "( @civicrm_disable_logging IS NULL OR @civicrm_disable_logging = 0 )", $triggerSQL);
           CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
           CRM_Core_DAO::executeQuery(
             $triggerSQL,

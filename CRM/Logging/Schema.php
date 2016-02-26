@@ -144,6 +144,9 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_update");
       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_delete");
     }
+    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_insert", FALSE);
+    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_update", FALSE);
+    $dao->query("DROP TRIGGER IF EXISTS civicrm_events_in_carts_after_delete", FALSE);
   }
 
   /**
