@@ -54,10 +54,29 @@ class CRM_Utils_Address {
     $microformat      = FALSE,
     $mailing          = FALSE,
     $individualFormat = FALSE,
-    $tokenFields      = NULL
+    $tokenFields      = NULL,
+    $useCountryFormat    = FALSE
   ) {
-    static $config = NULL;
 
+    static $config = NULL;
+    
+    $country_format = FALSE;
+    if ($useCountryFormat) {
+      watchdog('debug', "Building address block with fields: <pre>" . var_export($fields, TRUE) . "</pre>");
+      $country_name = CRM_Utils_Array::value('country', $fields);
+      if (!empty($country_name)) {
+        $query = "SELECT f.format FROM civicrm_country c INNER JOIN civicrm_address_format f ON c.address_format_id = f.id WHERE c.name LIKE %1";
+        $params  = array(1 => array($country_name, 'String'));        
+        $country_format_dao = CRM_Core_DAO::executeQuery($query, $params);
+        while ($country_format_dao->fetch()) {
+          $country_format = $country_format_dao->format;
+        }
+      }
+    }
+    if ($country_format) {
+      $format = $country_format;
+    }
+    
     if (!$format) {
       $format =
         CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_format');
@@ -69,10 +88,17 @@ class CRM_Utils_Address {
     }
 
     $formatted = $format;
-
     $fullPostalCode = CRM_Utils_Array::value('postal_code', $fields);
     if (!empty($fields['postal_code_suffix'])) {
       $fullPostalCode .= "-$fields[postal_code_suffix]";
+    }
+
+    if (!empty($fields['country'])) {
+      $country_names = CRM_Core_PseudoConstant::country();
+      $country_ids = array_flip($country_names);
+      $country_isos = CRM_Core_PseudoConstant::countryIsoCode();
+      $countryISO = $country_isos[$country_ids[$fields['country']]];
+      $fields['country_iso'] = $countryISO;
     }
 
     // make sure that some of the fields do have values
@@ -121,6 +147,7 @@ class CRM_Utils_Address {
         'contact.state_province' => CRM_Utils_Array::value('state_province', $fields),
         'contact.postal_code' => $fullPostalCode,
         'contact.country' => CRM_Utils_Array::value('country', $fields),
+        'contact.country_iso' => $countryISO,
         'contact.world_region' => CRM_Utils_Array::value('world_region', $fields),
         'contact.geo_code_1' => CRM_Utils_Array::value('geo_code_1', $fields),
         'contact.geo_code_2' => CRM_Utils_Array::value('geo_code_2', $fields),
@@ -181,6 +208,8 @@ class CRM_Utils_Address {
         $replacements['contact.postal_code'] = '';
       }
     }
+
+    
 
     // replacements in case of Custom Token
     if (stristr($formatted, 'custom_')) {
@@ -262,6 +291,7 @@ class CRM_Utils_Address {
         }
       }
     }
+
     return $finalFormatted;
   }
 
