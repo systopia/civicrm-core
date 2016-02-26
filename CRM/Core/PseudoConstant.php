@@ -1162,12 +1162,15 @@ WHERE  id = %1";
    * @return array - array reference of all groups.
    *
    */
-  public static function &staticGroup($onlyPublic = FALSE, $groupType = NULL, $excludeHidden = TRUE) {
+  public static function &staticGroup($onlyPublic = FALSE, $groupType = NULL, $excludeHidden = TRUE, $excludeParents = FALSE) {
     if (!self::$staticGroup) {
       $condition = 'saved_search_id = 0 OR saved_search_id IS NULL';
       if ($onlyPublic) {
         $condition .= " AND visibility != 'User and User Admin Only'";
       }
+      if ($excludeParents) {
+        $condition .= " AND children IS NULL AND is_reserved = 0 ";
+      } 
 
       if ($groupType) {
         $condition .= ' AND ' . CRM_Contact_BAO_Group::groupTypeCondition($groupType);

@@ -95,7 +95,7 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
       $allGroups = CRM_Core_PseudoConstant::staticGroup($onlyPublicGroups);
     }
     else {
-      $allGroups = CRM_Core_PseudoConstant::group();
+      $allGroups = CRM_Core_PseudoConstant::staticGroup(FALSE, NULL, TRUE, TRUE);
     }
 
     // Arrange groups into hierarchical listing (child groups follow their parents and have indentation spacing in title)
