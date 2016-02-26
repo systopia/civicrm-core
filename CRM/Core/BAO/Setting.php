@@ -850,7 +850,8 @@ class CRM_Core_BAO_Setting extends CRM_Core_DAO_Setting {
       }
       unset($params[$dao->name]);
     }
-
+    //watchdog('debug', "Directory params are: <pre>" . var_export($dirParams, TRUE) . "</pre>");
+    //watchdog('debug', "URL params are: <pre>" . var_export($urlParams, TRUE) . "</pre>");
     if (!empty($dirParams)) {
       self::storeDirectoryOrURLPreferences($dirParams,
         self::DIRECTORY_PREFERENCES_NAME

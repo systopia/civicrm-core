@@ -1273,6 +1273,7 @@ WHERE id={$id}; ";
           $fields = array_merge($fields, CRM_Core_OptionValue::getFields('', $contactType));
         }
         // add current employer for individuals
+        
         $fields = array_merge($fields, array(
           'current_employer' =>
             array(
@@ -1280,7 +1281,7 @@ WHERE id={$id}; ";
               'title' => ts('Current Employer'),
             ),
           ));
-
+      
         $locationType = array(
           'location_type' => array('name' => 'location_type',
             'where' => 'civicrm_location_type.name',

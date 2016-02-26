@@ -66,6 +66,7 @@ class CRM_Core_BAO_ConfigSetting {
    * @static
    */
   static function add(&$params) {
+    //watchdog('debug', "Adding CiviCRM config params: <pre>" . var_export($params, TRUE) . "</pre>");
     self::fixParams($params);
 
     // also set a template url so js files can use this
@@ -105,7 +106,7 @@ class CRM_Core_BAO_ConfigSetting {
     }
 
     CRM_Core_BAO_Setting::fixAndStoreDirAndURL($params);
-
+    //watchdog('debug', "CiviCRM config params after fix function: <pre>" . var_export($params, TRUE) . "</pre>");
     // also skip all Dir Params, we dont need to store those in the DB!
     foreach ($params as $name => $val) {
       if (substr($name, -3) == 'Dir') {
