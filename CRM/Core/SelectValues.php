@@ -517,6 +517,7 @@ class CRM_Core_SelectValues {
         '{mailing.name}' => ts('Mailing name'),
         '{mailing.group}' => ts('Mailing group'),
         '{mailing.viewUrl}' => ts('Mailing permalink'),
+        '{mailing.viewUrlEncoded}'    => ts('Mailing permalink URL encoded'),
       );
     }
     return $tokens;

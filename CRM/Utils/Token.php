@@ -57,6 +57,7 @@ class CRM_Utils_Token {
       'group',
       'subject',
       'viewUrl',
+      'viewUrlEncoded',
       'editUrl',
       'scheduleUrl',
       'approvalStatus',
@@ -102,6 +103,7 @@ class CRM_Utils_Token {
    */
   public static function requiredTokens(&$str) {
     if (self::$_requiredTokens == NULL) {
+/*
       self::$_requiredTokens = array(
         'domain.address' => ts("Domain address - displays your organization's postal address."),
         'action.optOutUrl or action.subscribeUrl' =>
@@ -112,6 +114,7 @@ class CRM_Utils_Token {
           'action.unsubscribe' => ts("'Unsubscribe via web page' - creates a link for recipients to unsubscribe from the specific mailing list used to send this message. Alternatively, you can include the 'Unsubscribe via email' token or one of the Opt-out tokens."),
         ),
       );
+*/
     }
 
     $missing = array();
@@ -432,6 +435,13 @@ class CRM_Utils_Token {
         $value = CRM_Utils_System::url('civicrm/mailing/view',
           "reset=1&id={$mailing->id}",
           TRUE, NULL, FALSE, TRUE
+        );
+        break;
+
+      case 'viewUrlEncoded':
+        $value = urlencode(CRM_Utils_System::url( 'civicrm/mailing/view',
+          "reset=1&id={$mailing->id}",
+          TRUE, NULL, FALSE, TRUE)
         );
         break;
 
