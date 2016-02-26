@@ -115,7 +115,7 @@ var toDataUrl     = "{/literal}{crmURL p='civicrm/ajax/checkemail' q='id=1' h=0 
 cj( "#to"     ).tokenInput( toDataUrl,     { prePopulate: toContact,  theme: 'facebook', hintText: hintText });
 cj( "#cc_id"  ).tokenInput( sourceDataUrl, { prePopulate: ccContact,  theme: 'facebook', hintText: hintText });
 cj( "#bcc_id" ).tokenInput( sourceDataUrl, { prePopulate: bccContact, theme: 'facebook', hintText: hintText });
-cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
+cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '650px' );
 </script>
 {/literal}
 {include file="CRM/common/formNavigate.tpl"}

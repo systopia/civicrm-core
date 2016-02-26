@@ -46,6 +46,7 @@
         {$preferred_communication_method_display}
       </div>
     </div>
+    {*
     {if $preferred_language}
     <div class="crm-summary-row">
       <div class="crm-label">{ts}Preferred Language{/ts}</div>
@@ -54,6 +55,7 @@
       </div>
     </div>
     {/if}
+    *}
     <div class="crm-summary-row">
       <div class="crm-label">{ts}Email Format{/ts}</div>
       <div class="crm-content crm-contact-preferred_mail_format">

@@ -87,16 +87,16 @@ class CRM_Contact_Form_Edit_Individual {
 
       // job title
       // override the size for UI to look better
-      $attributes['job_title']['size'] = 30;
-      $form->addElement('text', 'job_title', ts('Job Title'), $attributes['job_title'], 'size="30"');
+      //$attributes['job_title']['size'] = 30;
+      //$form->addElement('text', 'job_title', ts('Job Title'), $attributes['job_title'], 'size="30"');
 
       //Current Employer Element
-      $employerDataURL = CRM_Utils_System::url('civicrm/ajax/rest', 'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&employee_id=' . $form->_contactId, FALSE, NULL, FALSE);
-      $form->assign('employerDataURL', $employerDataURL);
+      //$employerDataURL = CRM_Utils_System::url('civicrm/ajax/rest', 'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&employee_id=' . $form->_contactId, FALSE, NULL, FALSE);
+      //$form->assign('employerDataURL', $employerDataURL);
 
-      $form->addElement('text', 'current_employer', ts('Current Employer'), '');
-      $form->addElement('hidden', 'current_employer_id', '', array('id' => 'current_employer_id'));
-      $form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value('source', $attributes));
+      //$form->addElement('text', 'current_employer', ts('Current Employer'), '');
+      //$form->addElement('hidden', 'current_employer_id', '', array('id' => 'current_employer_id'));
+      //$form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value('source', $attributes));
     }
 
     if ( !$inlineEditMode ) {

@@ -23,9 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div id="custom-set-content-{$customGroupId}" {if $permission EQ 'edit'} class="crm-inline-edit" data-edit-params='{ldelim}"cid": "{$contactId}", "class_name": "CRM_Contact_Form_Inline_CustomData", "groupID": "{$customGroupId}", "customRecId": "{$customRecId}", "cgcount" : "{$cgcount}"{rdelim}'{/if}>
-  <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit'}title="{ts}Edit{/ts}"{/if}>
-    {if $permission EQ 'edit'}
+<div id="custom-set-content-{$customGroupId}" {if $permission EQ 'edit' and $customGroupId neq '4'} class="crm-inline-edit" data-edit-params='{ldelim}"cid": "{$contactId}", "class_name": "CRM_Contact_Form_Inline_CustomData", "groupID": "{$customGroupId}", "customRecId": "{$customRecId}", "cgcount" : "{$cgcount}"{rdelim}'{/if}>
+  <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit' and $customGroupId neq '4'}title="{ts}Edit{/ts}"{/if}>
+    {if $permission EQ 'edit' and $customGroupId neq '4'}
       <div class="crm-edit-help">
         <span class="batch-edit"></span>{ts}Edit{/ts}
       </div>

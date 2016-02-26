@@ -52,6 +52,7 @@
       </div>
       {/if}
       {/foreach}
+      {*
       <div class="crm-summary-row">
         <div class="crm-label">
           {$form.preferred_language.label}
@@ -60,6 +61,7 @@
           {$form.preferred_language.html}
         </div>
       </div>
+      *}
       <div class="crm-summary-row">
         <div class="crm-label">
           {$form.preferred_mail_format.label}

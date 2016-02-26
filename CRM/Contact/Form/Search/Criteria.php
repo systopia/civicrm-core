@@ -107,10 +107,10 @@ class CRM_Contact_Form_Search_Criteria {
     $form->add('text', 'email', ts('Contact Email'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
 
     //added contact source
-    $form->add('text', 'contact_source', ts('Contact Source'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'contact_source'));
+    //$form->add('text', 'contact_source', ts('Contact Source'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'contact_source'));
 
     //added job title
-    $form->addElement('text', 'job_title', ts('Job Title'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'job_title'));
+    //$form->addElement('text', 'job_title', ts('Job Title'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'job_title'));
 
 
     //added internal ID
@@ -254,8 +254,8 @@ class CRM_Contact_Form_Search_Criteria {
     $form->addGroup($commPreff, 'preferred_communication_method', ts('Preferred Communication Method'));
 
     //CRM-6138 Preferred Language
-    $langPreff = CRM_Core_PseudoConstant::languages();
-    $form->add('select', 'preferred_language', ts('Preferred Language'), array('' => ts('- any -')) + $langPreff);
+    //$langPreff = CRM_Core_PseudoConstant::languages();
+    //$form->add('select', 'preferred_language', ts('Preferred Language'), array('' => ts('- any -')) + $langPreff);
 
     // Phone search
     $form->addElement('text', 'phone_numeric', ts('Phone Number'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone'));

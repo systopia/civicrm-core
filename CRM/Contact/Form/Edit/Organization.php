@@ -66,14 +66,14 @@ class CRM_Contact_Form_Edit_Organization {
       $form->addElement('text', 'legal_name', ts('Legal Name'), $attributes['legal_name']);
 
       // nick_name
-      $form->addElement('text', 'nick_name', ts('Nickname'),
-        CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'nick_name')
-      );
+      //$form->addElement('text', 'nick_name', ts('Nickname'),
+      //  CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'nick_name')
+      //);
 
       // sic_code
-      $form->addElement('text', 'sic_code', ts('SIC Code'), $attributes['sic_code']);
+      //$form->addElement('text', 'sic_code', ts('SIC Code'), $attributes['sic_code']);
 
-      $form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value('source', $attributes));
+      //$form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value('source', $attributes));
     }
 
     if ( !$inlineEditMode ) {

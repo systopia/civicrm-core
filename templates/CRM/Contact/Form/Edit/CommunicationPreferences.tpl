@@ -103,10 +103,12 @@
                     {/foreach}
                 </td>
             {/foreach}
+            {*
                  <td>
                      <br /><span class="label">{$form.preferred_language.label}</span>
                      <br />{$form.preferred_language.html}
                 </td>
+            *}
         </tr>
         <tr>
             <td>{$form.is_opt_out.html} {$form.is_opt_out.label} {help id="id-optOut" file="CRM/Contact/Form/Contact.hlp"}</td>
