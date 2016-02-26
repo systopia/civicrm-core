@@ -220,6 +220,10 @@ function civicrm_api3_custom_value_get($params) {
       $values[$id]['latest'] = $value;
       $values[$id]['id'] = $id;
       $values[$id][$n] = $value;
+      if ($id == '8') {
+        $iso_code = CRM_Core_PseudoConstant::countryIsoCode($value);
+        $values[$id]['iso_code'] = $iso_code;
+      }
     }
     return civicrm_api3_create_success($values, $params);
   }
