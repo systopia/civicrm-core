@@ -795,6 +795,8 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
                               civicrm_contact.employer_id as employer_id,
                               civicrm_contact.organization_name as organization_name,
                               civicrm_address.street_address as street_address,
+                              civicrm_address.supplemental_address_1 as supplemental_address_1,
+                              civicrm_address.supplemental_address_2 as supplemental_address_2,
                               civicrm_address.city as city,
                               civicrm_address.postal_code as postal_code,
                               civicrm_state_province.abbreviation as state,
@@ -812,7 +814,10 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
                               civicrm_relationship.is_active as is_active,
                               civicrm_relationship.is_permission_a_b as is_permission_a_b,
                               civicrm_relationship.is_permission_b_a as is_permission_b_a,
-                              civicrm_relationship.case_id as case_id';
+                              civicrm_relationship.case_id as case_id,
+                              civicrm_value_position_2.position_3 as position,
+                              civicrm_value_position_2.native_position_4 as native_position,
+                              civicrm_value_position_2.issues_20 as issues';
 
       if ($direction == 'a_b') {
         $select .= ', civicrm_relationship_type.label_a_b as label_a_b,
@@ -840,6 +845,7 @@ LEFT JOIN  civicrm_phone   ON (civicrm_phone.contact_id = civicrm_contact.id AND
 LEFT JOIN  civicrm_email   ON (civicrm_email.contact_id = civicrm_contact.id AND civicrm_email.is_primary = 1)
 LEFT JOIN  civicrm_state_province ON (civicrm_address.state_province_id = civicrm_state_province.id)
 LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
+LEFT JOIN civicrm_value_position_2 ON (civicrm_value_position_2.entity_id = civicrm_relationship.id AND civicrm_relationship.relationship_type_id = '11')  
 ";
     $where = 'WHERE ( 1 )';
     if ($contactId) {
@@ -989,6 +995,10 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
         $values[$rid]['phone'] = $relationship->phone;
         $values[$rid]['employer_id'] = $relationship->employer_id;
         $values[$rid]['organization_name'] = $relationship->organization_name;
+        $values[$rid]['street_address'] = $relationship->street_address;
+        $values[$rid]['supplemental_address_1'] = $relationship->supplemental_address_1;
+        $values[$rid]['supplemental_address_2'] = $relationship->supplemental_address_2;
+        $values[$rid]['postal_code'] = $relationship->postal_code;
         $values[$rid]['country'] = $relationship->country;
         $values[$rid]['city'] = $relationship->city;
         $values[$rid]['state'] = $relationship->state;
@@ -999,6 +1009,9 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
         $values[$rid]['is_permission_a_b'] = $relationship->is_permission_a_b;
         $values[$rid]['is_permission_b_a'] = $relationship->is_permission_b_a;
         $values[$rid]['case_id'] = $relationship->case_id;
+        $values[$rid]['position'] = $relationship->position;
+        $values[$rid]['native_position'] = $relationship->native_position;
+        $values[$rid]['issues'] = $relationship->issues;
 
         if ($status) {
           $values[$rid]['status'] = $status;
