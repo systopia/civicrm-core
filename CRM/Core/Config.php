@@ -204,6 +204,8 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         // we retrieve the object from memcache, so we now initialize the objects
         self::$_singleton->_initialize($loadFromDB);
 
+        self::$_singleton->_retrieveSettings( );
+
         // CRM-9803, NYSS-4822
         // this causes various settings to be reset and hence we should
         // only use the config object that we retrived from memcache
@@ -396,6 +398,17 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
     return self::$_log;
   }
 
+  /*
+   * Retrieve the serialized settings
+   * @return settings associative array
+   * @access private
+   */
+  private function _retrieveSettings(){
+    $variables = array();
+    CRM_Core_BAO_ConfigSetting::retrieve($variables);
+    return $variables;
+  }
+
   /**
    * initialize the config variables
    *
@@ -404,8 +417,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
    */
   private function _initVariables() {
     // retrieve serialised settings
-    $variables = array();
-    CRM_Core_BAO_ConfigSetting::retrieve($variables);
+    $variables = $this->_retrieveSettings();
 
     // if settings are not available, go down the full path
     if (empty($variables)) {
