@@ -185,7 +185,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
       // call the function to create shared relationships
       // we only create create relationship if address is shared by Individual
       if ($address->master_id != 'null') {
-        self::processSharedAddressRelationship($address->master_id, $params);
+        //self::processSharedAddressRelationship($address->master_id, $params);
       }
 
       // lets call the post hook only after we've done all the follow on processing
