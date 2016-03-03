@@ -23,7 +23,7 @@
   | GNU Affero General Public License or the licensing of CiviCRM,     |
   | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
   +--------------------------------------------------------------------+
- */
+ */ 
 
 /**
  *
@@ -104,6 +104,10 @@ class CRM_Report_Form_Event_ParticipantListing extends CRM_Report_Form_Event {
           ),
           'employer_id' => array(
             'title' => ts('Organization'),
+            'no_display' => TRUE,
+          ),
+          'job_title' => array(
+            'title' => ts('Job Title'),
           ),
         ),
         'grouping' => 'contact-fields',
@@ -359,6 +363,42 @@ class CRM_Report_Form_Event_ParticipantListing extends CRM_Report_Form_Event {
           ),
         ),
       ),
+      'civicrm_value_attendee_details_4' =>
+      array(
+        'dao' => 'CRM_Core_DAO_CustomField',
+        'fields' =>
+        array(
+          'booking_reference_16' => array(
+            'title' => ts('ICA booking reference'),
+            //'required' => TRUE,
+          ),
+        /*
+          'group_registration_number_59' => array(
+            'title' => ts('Group reg #'),
+          ),
+          'wow_booking_reference_60' => array(
+            'title' => ts('WoW ref #'),
+          ),
+        */
+          'wow_booking_reference_for_discou_61' => array(
+            'no_display' => TRUE,
+            'required' => FALSE,
+          ),
+          'other_language_52' => array(
+            'no_display' => TRUE,
+            'required' => FALSE,
+          ),
+          'conference_participation_51' => array(
+            'title' => ts('Conference participation'),
+            //'no_display' => FALSE,
+            //'required' => FALSE,
+          ),
+        ),
+      ),
+      'civicrm_value_organisation_details_5' =>
+        array(
+          'dao' => 'CRM_Core_DAO_CustomField',
+        ),
       'civicrm_line_item' => array(
         'dao' => 'CRM_Price_DAO_LineItem',
         'grouping' => 'priceset-fields',

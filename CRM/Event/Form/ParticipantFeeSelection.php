@@ -368,7 +368,7 @@ class CRM_Event_Form_ParticipantFeeSelection extends CRM_Core_Form {
 
     $sendTemplateParams = array(
       'groupName' => 'msg_tpl_workflow_event',
-      'valueName' => 'event_offline_receipt',
+      'valueName' => 'event_online_receipt',
       'contactId' => $this->_contactId,
       'isTest' => FALSE,
       'PDFFilename' => ts('confirmation') . '.pdf',

@@ -105,6 +105,17 @@
       {include file="CRM/Price/Form/ParticipantCount.tpl"}
       {if ! $quickConfig}</fieldset>{/if}
     {/if}
+    {* Add all the form elements sent in by the hook *}
+{if $beginHookFormElements}
+  <table class="form-layout-compressed">
+  {foreach from=$beginHookFormElements key=dontCare item=hookFormElement}
+      {if $dontCare eq 'discountcode1' || $dontCare eq '1'}
+      <tr><td class="label nowrap">{$form.$hookFormElement.label}</td><td>{$form.$hookFormElement.html}</td></tr> 
+      {/if}
+  {/foreach}
+  </table>
+{/if}
+
     {if $pcp && $is_honor_roll }
       <fieldset class="crm-group pcp-group">
         <div class="crm-section pcp-section">

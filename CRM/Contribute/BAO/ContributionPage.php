@@ -912,7 +912,7 @@ LEFT JOIN  civicrm_premiums            ON ( civicrm_premiums.entity_id = civicrm
    *   Contact id for contributor.
    * @return array
    */
-  public static function addInvoicePdfToEmail($contributionId, $userID) {
+  public static function addInvoicePdfToEmail($contributionId, $userID, $addReceipt = FALSE) {
     $contributionID = array($contributionId);
     $contactId = array($userID);
     $pdfParams = array(
@@ -920,7 +920,7 @@ LEFT JOIN  civicrm_premiums            ON ( civicrm_premiums.entity_id = civicrm
       'forPage' => 'confirmpage',
     );
     $pdfHtml = CRM_Contribute_Form_Task_Invoice::printPDF($contributionID,
-      $pdfParams, $contactId, CRM_Core_DAO::$_nullObject);
+      $pdfParams, $contactId, CRM_Core_DAO::$_nullObject, $addReceipt);
     return $pdfHtml;
   }
 

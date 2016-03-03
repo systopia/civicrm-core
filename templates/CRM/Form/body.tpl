@@ -51,7 +51,9 @@
 {if $beginHookFormElements}
   <table class="form-layout-compressed">
   {foreach from=$beginHookFormElements key=dontCare item=hookFormElement}
+      {if $dontCare neq 'discountcode1' && $dontCare != '1'} 
       <tr><td class="label nowrap">{$form.$hookFormElement.label}</td><td>{$form.$hookFormElement.html}</td></tr>
+      {/if}
   {/foreach}
   </table>
 {/if}

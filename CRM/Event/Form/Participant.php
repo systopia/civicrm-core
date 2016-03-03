@@ -1303,6 +1303,25 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       if ($this->_single) {
         $this->_contactIds[] = $this->_contactId;
       }
+      
+      if ($this->_paymentId) {
+        $paymentInfo = CRM_Contribute_BAO_Contribution::getPaymentInfo($this->_id, 'event', TRUE, TRUE);
+        $custom_is_pay_later = FALSE;
+        //CRM_Contribute_BAO_Contribution::getPaymentInfo($this->_participantId, 'event');
+        //var_dump($paymentInfo);
+        //watchdog('debug', "Payment ID is: <pre>" . print_r($this->_paymentId, TRUE) . "</pre>");
+        //watchdog('debug', "Payment info for this event registraion is <pre>" . print_r($paymentInfo, TRUE) . "</pre>");
+        if ($paymentInfo['payLater']) {
+          $custom_is_pay_later = TRUE;
+        }
+      }
+      
+      /*
+      if ($this->_onlinePendingContributionId) {
+        $contributionParams['is_pay_later'] = 1;
+        $sendTemplateParams['is_pay_later'] = 1;
+      }
+      */
 
       $contributions = array();
       if (!empty($params['record_contribution'])) {
@@ -1363,6 +1382,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
           $contributionParams['participant_id'] = $this->_id;
         }
         // Set is_pay_later flag for back-office offline Pending status contributions
+        watchdog('debug', "Contribution status ID is {$contributionParams['contribution_status_id']}");
+        $pendingstatus = CRM_Core_OptionGroup::getValue('contribution_status', 'Pending', 'name');
+        watchdog('debug', "Pending value from getValue is $pendingstatus");
         if ($contributionParams['contribution_status_id'] == CRM_Core_OptionGroup::getValue('contribution_status', 'Pending', 'name')) {
           $contributionParams['is_pay_later'] = 1;
         }
@@ -1535,8 +1557,10 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
             );
           }
         }
-
+       
         $this->assign('totalAmount', $contributionParams['total_amount']);
+        watchdog('debug', "Particpant form contributionParams are: <pre>" . print_r($contributionParams, TRUE) . "</pre>");
+        $this->assign('contributionId', $contributionParams['contribution']->id);
         if (isset($contributionParams['partial_payment_total'])) {
           // balance amount
           $balanceAmount = $contributionParams['partial_payment_total'] - $contributionParams['partial_amount_pay'];
@@ -1676,11 +1700,12 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
 
         $sendTemplateParams = array(
           'groupName' => 'msg_tpl_workflow_event',
-          'valueName' => 'event_offline_receipt',
+          'valueName' => 'event_online_receipt',
           'contactId' => $contactID,
           'isTest' => (bool) CRM_Utils_Array::value('is_test', $this->_defaultValues),
-          'PDFFilename' => ts('confirmation') . '.pdf',
+          'PDFFilename' => ts('Registration_Confirmation') . '.pdf',
         );
+        
 
         // try to send emails only if email id is present
         // and the do-not-email option is not checked for that contact
@@ -1691,6 +1716,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
           $sendTemplateParams['cc'] = CRM_Utils_Array::value('cc', $this->_fromEmails);
           $sendTemplateParams['bcc'] = CRM_Utils_Array::value('bcc', $this->_fromEmails);
         }
+        if ($custom_is_pay_later) {
+          $this->assign('is_pay_later', TRUE);
+        }
 
         //send email with pdf invoice
         $template = CRM_Core_Smarty::singleton();
@@ -1700,10 +1728,17 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
         );
         $prefixValue = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME, 'contribution_invoice_settings');
         $invoicing = CRM_Utils_Array::value('invoicing', $prefixValue);
-        if (count($taxAmt) > 0 && (isset($invoicing) && isset($prefixValue['is_email_pdf']))) {
+        if ((isset($invoicing) && isset($prefixValue['is_email_pdf']))) {
           $sendTemplateParams['isEmailPdf'] = TRUE;
           $sendTemplateParams['contributionId'] = $contributionId;
         }
+        $sendTemplateParams['emailReceipt'] = FALSE;
+        if ($this->_params['status_id'] == '2') {
+          $sendTemplateParams['emailReceipt'] = TRUE;
+          $sendTemplateParams['PDFFilename'] = ts('Event_Confirmation-Registered') . '.pdf';
+        }
+        $this->assign('participant_status_id', $this->_params['status_id']);
+        watchdog('debug', "Send template params are: <pre>" . print_r($sendTemplateParams, TRUE) . "</pre>");
         list($mailSent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
         if ($mailSent) {
           $sent[] = $contactID;

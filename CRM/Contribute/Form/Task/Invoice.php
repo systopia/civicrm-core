@@ -244,7 +244,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
    * @param CRM_Core_Form $form
    *   Form object.
    */
-  public static function printPDF($contribIDs, &$params, $contactIds, &$form) {
+  public static function printPDF($contribIDs, &$params, $contactIds, &$form, $receipt = FALSE) {
     // get all the details needed to generate a invoice
     $messageInvoice = array();
     $invoiceTemplate = CRM_Core_Smarty::singleton();
@@ -316,7 +316,8 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
 
       //to obtain due date for PDF invoice
       $contributionReceiveDate = date('F j,Y', strtotime(date($input['receive_date'])));
-      $invoiceDate = date("F j, Y");
+      //$invoiceDate = date("j F Y");
+      $invoiceDate = date('j F Y', strtotime(date($input['receive_date'])));
       $dueDate = date('F j ,Y', strtotime($contributionReceiveDate . "+" . $prefixValue['due_date'] . "" . $prefixValue['due_date_period']));
 
       if ($input['component'] == 'contribute') {
@@ -411,14 +412,16 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
       else {
         $countryDomain = '';
       }
-
+      watchdog('debug', "Template lineItems are: <pre>" . print_r($lineItem, TRUE) . "</pre>");
       // parameters to be assign for template
       $tplParams = array(
         'title' => $title,
         'component' => $input['component'],
         'id' => $contribution->id,
+        'receipt' => $receipt,
         'source' => $source,
         'invoice_id' => $invoiceId,
+        'receive_date' => $contribution->receive_date,
         'resourceBase' => $config->userFrameworkResourceURL,
         'defaultCurrency' => $config->defaultCurrency,
         'amount' => $contribution->total_amount,
@@ -465,6 +468,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
       );
       $session = CRM_Core_Session::singleton();
       $contactID = $session->get('userID');
+      $contactID = $contribution->contact_id;
       $contactEmails = CRM_Core_BAO_Email::allEmails($contactID);
       $emails = array();
       $fromDisplayName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
@@ -545,8 +549,8 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
       }
       else {
         CRM_Utils_PDF_Utils::html2pdf($messageInvoice, 'Invoice.pdf', FALSE, array(
-          'margin_top' => 10,
-          'margin_left' => 65,
+          'margin_top' => 8,
+          'margin_left' => 32,
           'metric' => 'px',
         ));
         // functions call for adding activity with attachment
@@ -629,7 +633,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
    *   Name of file which is in pdf format
    */
   static public function putFile($html) {
-    require_once "packages/dompdf/dompdf_config.inc.php";
+    require_once "vendor/dompdf/dompdf/dompdf_config.inc.php";
     spl_autoload_register('DOMPDF_autoload');
     $doc = new DOMPDF();
     $doc->load_html($html);
