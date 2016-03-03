@@ -3158,10 +3158,11 @@ WHERE  contribution_id = %1 ";
     $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
     $checkStatus = array(
       'Cancelled' => array('Completed', 'Refunded'),
-      'Completed' => array('Cancelled', 'Refunded'),
+      'Completed' => array('Cancelled', 'Refunded', 'Pending refund'),
       'Pending' => array('Cancelled', 'Completed', 'Failed'),
       'In Progress' => array('Cancelled', 'Completed', 'Failed'),
       'Refunded' => array('Cancelled', 'Completed'),
+      'Pending refund' => array('Cancelled', 'Completed'),
     );
 
     if (!in_array($contributionStatuses[$fields['contribution_status_id']], $checkStatus[$contributionStatuses[$values['contribution_status_id']]])) {
@@ -3488,7 +3489,6 @@ WHERE eft.financial_trxn_id IN ({$trxnId}, {$baseTrxnId['financialTrxnId']})
       $entity = 'participant';
       $entityTable = 'civicrm_participant';
       $contributionId = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_ParticipantPayment', $id, 'contribution_id', 'participant_id');
-
       if (!$contributionId) {
         if ($primaryParticipantId = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_Participant', $id, 'registered_by_id')) {
           $contributionId = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_ParticipantPayment', $primaryParticipantId, 'contribution_id', 'participant_id');
@@ -3583,6 +3583,7 @@ WHERE con.id = {$contributionId}
       }
       $info['transaction'] = $rows;
     }
+    watchdog('debug', "Transaction info is: <pre>" . print_r($info, TRUE) . "</pre>");
     return $info;
   }
 
