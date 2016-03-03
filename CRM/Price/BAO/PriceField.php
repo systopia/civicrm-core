@@ -376,7 +376,7 @@ class CRM_Price_BAO_PriceField extends CRM_Price_DAO_PriceField {
         foreach ($customOption as $opId => $opt) {
           $taxAmount = CRM_Utils_Array::value('tax_amount', $opt);
           if ($field->is_display_amounts) {
-            $opt['label'] = !empty($opt['label']) ? $opt['label'] . '&nbsp;-&nbsp;' : '';
+            $opt['label'] = !empty($opt['label']) ? $opt['label'] . '&nbsp;:&nbsp;' : '';
             if (isset($taxAmount) && $invoicing) {
               if ($displayOpt == 'Do_not_show') {
                 $opt['label'] = '<span class="crm-price-amount-label">' . $opt['label'] . '</span>' . '<span class="crm-price-amount-amount">' . CRM_Utils_Money::format($opt[$valueFieldName] + $taxAmount) . '</span>';
@@ -474,7 +474,7 @@ class CRM_Price_BAO_PriceField extends CRM_Price_DAO_PriceField {
           $max_value = CRM_Utils_Array::value('max_value', $opt, '');
 
           if ($field->is_display_amounts) {
-            $opt['label'] .= '&nbsp;-&nbsp;';
+            $opt['label'] .= '&nbsp;:&nbsp;';
             if (isset($taxAmount) && $invoicing) {
               $opt['label'] = $opt['label'] . self::getTaxLabel($opt, $valueFieldName, $displayOpt, $taxTerm);
             }
@@ -525,7 +525,7 @@ class CRM_Price_BAO_PriceField extends CRM_Price_DAO_PriceField {
           $max_value = CRM_Utils_Array::value('max_value', $opt, '');
 
           if ($field->is_display_amounts) {
-            $opt['label'] = '<span class="crm-price-amount-label">' . $opt['label'] . '</span>&nbsp;-&nbsp;';
+            $opt['label'] = '<span class="crm-price-amount-label">' . $opt['label'] . '</span>&nbsp;:&nbsp;';
             if (isset($taxAmount) && $invoicing) {
               $opt['label'] .= self::getTaxLabel($opt, $valueFieldName, $displayOpt, $taxTerm);
             }

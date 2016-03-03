@@ -1153,6 +1153,7 @@ WHERE civicrm_event.is_active = 1
           'contributeMode' => CRM_Utils_Array::value('contributeMode', $template->_tpl_vars),
           'participantID' => $participantId,
           'conference_sessions' => $sessions,
+          //'contribution_id' => CRM_Utils_Array::value('contribution_id', $participantParams),
           'credit_card_number' =>
             CRM_Utils_System::mungeCreditCard(
               CRM_Utils_Array::value('credit_card_number', $participantParams)),
@@ -1179,7 +1180,7 @@ WHERE civicrm_event.is_active = 1
           'contactId' => $contactID,
           'isTest' => $isTest,
           'tplParams' => $tplParams,
-          'PDFFilename' => ts('confirmation') . '.pdf',
+          'PDFFilename' => ts('Registration_Confirmation') . '.pdf',
         );
 
         // address required during receipt processing (pdf and email receipt)
@@ -1209,7 +1210,15 @@ WHERE civicrm_event.is_active = 1
             $sendTemplateParams['tplParams']['lineItem'] = $lineItem;
           }
         }
+        foreach ($values['lineItem'] as $item) {
+          foreach ($item as $contrib) {
+                $values['contributionId'] = $contrib['contribution_id'];
+          }
+        }
+        $sendTemplateParams['contributionId'] = $values['contributionId'];
+        $sendTemplateParams['tplParams']['contributionId'] = $values['contributionId'];
 
+        //watchdog('debug', "In Event_BAO, sendTemplateParams are: <pre>" . print_r($sendTemplateParams, TRUE) . "</pre>");
         if ($returnMessageText) {
           list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
           return array(
@@ -1235,9 +1244,9 @@ WHERE civicrm_event.is_active = 1
           $taxAmt = $template->get_template_vars('totalTaxAmount');
           $prefixValue = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME, 'contribution_invoice_settings');
           $invoicing = CRM_Utils_Array::value('invoicing', $prefixValue);
-          if ($taxAmt && (isset($invoicing) && isset($prefixValue['is_email_pdf']))) {
+          //if ($taxAmt && (isset($invoicing) && isset($prefixValue['is_email_pdf']))) {
+          if (isset($invoicing) && isset($prefixValue['is_email_pdf'])) {
             $sendTemplateParams['isEmailPdf'] = TRUE;
-            $sendTemplateParams['contributionId'] = $values['contributionId'];
           }
           CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
         }

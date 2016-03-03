@@ -138,7 +138,7 @@
 
         </div>
     {/if}
-
+    {*
     {if $event.participant_role neq 'Attendee' and $defaultRole}
         <div class="crm-group participant_role-group">
             <div class="header-dark">
@@ -152,7 +152,7 @@
             </div>
         </div>
     {/if}
-
+    *}
     {include file="CRM/Event/Form/Registration/DisplayProfile.tpl"}
 
     {if $contributeMode ne 'notify' and (!$is_pay_later or $isBillingAddressRequiredForPayLater) and $paidEvent and !$isAmountzero and !$isOnWaitlist and !$isRequireApproval}

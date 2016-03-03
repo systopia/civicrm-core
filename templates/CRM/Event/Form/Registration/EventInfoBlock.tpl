@@ -36,14 +36,14 @@
   </tr>
   <tr><td><label>{ts}When{/ts}</label></td>
       <td width="90%">
-        {$event.event_start_date|crmDate}
+        {$event.event_start_date|crmDate:"%E %B %Y"}
         {if $event.event_end_date}
             &nbsp; {ts}through{/ts} &nbsp;
             {* Only show end time if end date = start date *}
             {if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}
                 {$event.event_end_date|crmDate:0:1}
             {else}
-                {$event.event_end_date|crmDate}
+                {$event.event_end_date|crmDate:"%E %B %Y"}
             {/if}
         {/if}
       </td>

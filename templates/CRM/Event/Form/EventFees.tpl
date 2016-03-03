@@ -66,8 +66,7 @@
     </td>
     </tr>
  {/if}
-
-    { if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId) and $isRecordPayment and ! $registeredByParticipantId }
+    { if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or 1) and $isRecordPayment and ! $registeredByParticipantId }
         <tr class="crm-event-eventfees-form-block-record_contribution">
             <td class="label">{$form.record_contribution.label}</td>
             <td>{$form.record_contribution.html}<br />
@@ -118,15 +117,15 @@
   {include file='CRM/Core/BillingBlock.tpl'}
 {/if}
 {if ($email OR $batchEmail) and $outBound_option != 2}
-    <fieldset id="send_confirmation_receipt"><legend>{if $paid}{ts}Registration Confirmation and Receipt{/ts}{else}{ts}Registration Confirmation{/ts}{/if}</legend>
+    <fieldset id="send_confirmation_receipt"><legend>{if $paid}{ts}Registration Confirmation{/ts}{else}{ts}Registration Confirmation{/ts}{/if}</legend>
       <table class="form-layout" style="width:auto;">
      <tr class="crm-event-eventfees-form-block-send_receipt">
-            <td class="label">{if $paid}{ts}Send Confirmation and Receipt{/ts}{else}{ts}Send Confirmation{/ts}{/if}</td>
+            <td class="label">{if $paid}{ts}Send Confirmation and Invoice/Payment Receipt{/ts}{else}{ts}Send Confirmation and Invoice/Payment Receipt{/ts}{/if}</td>
             <td>{$form.send_receipt.html}<br>
               {if $paid}
-                <span class="description">{ts 1=$email}Automatically email a confirmation and receipt to %1?{/ts}</span></td>
+                <span class="description">{ts 1=$email}Automatically email a confirmation and invoice or receipt to %1?{/ts}</span></td>
               {else}
-                <span class="description">{ts 1=$email}Automatically email a confirmation to %1?{/ts}</span></td>
+                <span class="description">{ts 1=$email}Automatically email a confirmation and invoice or receipt to %1?{/ts}</span></td>
               {/if}
         </tr>
   <tr id="from-email" class="crm-event-eventfees-form-block-from_email_address">
