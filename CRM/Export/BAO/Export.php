@@ -1302,19 +1302,26 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     if (method_exists($search, 'alterRow')) {
       $alterRow = TRUE;
     }
+    $columnTypes = array();
+    $columnTypesSet = FALSE;
     while ($dao->fetch()) {
       $row = array();
 
       foreach ($fields as $field) {
+        if (!$columnTypesSet) {
+          $columnTypes[$field] = $field . ' varchar(256)';
+        }
         $row[$field] = $dao->$field;
       }
       if ($alterRow) {
         $search->alterRow($row);
       }
       $rows[] = $row;
+      $columnTypesSet = TRUE;
     }
-
-    CRM_Core_Report_Excel::writeCSVFile(self::getExportFileName(), $header, $rows);
+    //$columnTypes = array();
+    CRM_CiviExportExcel_Utils_SearchExport::export2excel2007($header, $columnTypes, $rows);
+    //CRM_Core_Report_Excel::writeCSVFile(self::getExportFileName(), $header, $rows);
     CRM_Utils_System::civiExit();
   }
 
