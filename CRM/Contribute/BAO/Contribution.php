@@ -722,6 +722,16 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
         ),
       );
 
+      // CRM-17787
+      $campaignTitle = array(
+       'contribution_campaign_title' => array(
+         'title' => ts('Campaign Title'),
+         'name' => 'campaign_title',
+         'where' => 'civicrm_campaign.title',
+         'data_type' => CRM_Utils_Type::T_STRING,
+       ),
+      );      
+
       $softCreditFields = array(
         'contribution_soft_credit_name' => array(
           'name' => 'contribution_soft_credit_name',
@@ -750,7 +760,7 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
       );
 
       $fields = array_merge($impFields, $typeField, $contributionStatus, $contributionPage, $optionField, $expFieldProduct,
-        $expFieldsContrib, $contributionNote, $contributionRecurId, $extraFields, $softCreditFields, $financialAccount,
+        $expFieldsContrib, $contributionNote, $contributionRecurId, $extraFields, $softCreditFields, $financialAccount, $campaignTitle,
         CRM_Core_BAO_CustomField::getFieldsForImport('Contribution')
       );
 
