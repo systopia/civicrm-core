@@ -730,6 +730,12 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
          'where' => 'civicrm_campaign.title',
          'data_type' => CRM_Utils_Type::T_STRING,
        ),
+       'contribution_campaign_external_identifier' => array(
+         'title' => ts('Campaign External Identifier'),
+         'name' => 'campaign_external_identifier',
+         'where' => 'civicrm_campaign.external_identifier',
+         'data_type' => CRM_Utils_Type::T_STRING,
+       ),
       );      
 
       $softCreditFields = array(
