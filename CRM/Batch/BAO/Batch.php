@@ -612,6 +612,13 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
         }
         $exporter->makeIIF($export);
         break;
+
+      case 'SAGE':
+        foreach ($batchIds as $batchId) {
+          $export[$batchId] = $exporter->generateExportQuery($batchId);
+        }
+        $exporter->makeSAGE($export);
+        break;
     }
   }
 
