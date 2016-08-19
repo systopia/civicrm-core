@@ -277,7 +277,15 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
             elseif ($tableName == 'civicrm_contribution') {
               $this->_contribField = TRUE;
             }
-            $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+
+            if ($fieldName == 'receive_date') {
+              // in the case of the receive date, we don't just want any date,
+              //  but the most recent one.
+              $select[] = "MAX({$field['dbAlias']}) as {$tableName}_{$fieldName}";
+            } else {
+              $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+            }
+
             if (array_key_exists('title', $field)) {
               $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
             }
