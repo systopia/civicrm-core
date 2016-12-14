@@ -45,6 +45,16 @@ class CRM_Core_BAO_FinancialTrxn extends CRM_Financial_DAO_FinancialTrxn {
   }
 
   /**
+   * checks the settings if financial transactions should be created at all
+   *
+   * @return bool TRUE if financial transactions should be created.
+   */
+  public static function generateDefaultFinancialTrxns() {
+    // TODO: implement setting
+    return FALSE;
+  }
+
+  /**
    * Takes an associative array and creates a financial transaction object.
    *
    * @param array $params
@@ -320,6 +330,11 @@ WHERE ceft.entity_id = %1";
       return;
     }
 
+    if (!self::generateDefaultFinancialTrxns()) {
+      // don't do anything if generation is turned off
+      return;
+    }    
+
     if (!empty($params['cost'])) {
       $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
       $financialAccountType = CRM_Contribute_PseudoConstant::financialAccountType($params['financial_type_id']);
@@ -366,6 +381,11 @@ WHERE ceft.entity_id = %1";
    * @return bool
    */
   public static function recordFees($params) {
+    if (!self::generateDefaultFinancialTrxns()) {
+      // don't do anything if generation is turned off. The 
+      return;
+    }    
+
     $expenseTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Expense Account is' "));
     $domainId = CRM_Core_Config::domainID();
     $amount = 0;

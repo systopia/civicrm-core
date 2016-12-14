@@ -2702,6 +2702,10 @@ WHERE  contribution_id = %1 ";
    * @return null|object
    */
   public static function recordFinancialAccounts(&$params, $financialTrxnValues = NULL) {
+    if (!CRM_Core_BAO_FinancialTrxn::generateDefaultFinancialTrxns()) {
+      return FALSE;
+    }
+
     $skipRecords = $update = $return = $isRelatedId = FALSE;
 
     $additionalParticipantId = array();
