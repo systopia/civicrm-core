@@ -1989,25 +1989,4 @@ abstract class CRM_Utils_Hook {
     );
   }
 
-  /**
-   * This hook is called for bypass a few civicrm urls from IDS check
-   * @param array $skip list of civicrm url;
-   */
-  public static function shouldCreateFinancialTrxns(TODO) {
-  }
-
-  /**
-   * This hook is called for bypass a few civicrm urls from IDS check
-   * @param array $skip list of civicrm url;
-   */
-  public static function createFinancialTrxns(TODO) {
-  }
-
-  /**
-   * This hook is called for bypass a few civicrm urls from IDS check
-   * @param array $skip list of civicrm url;
-   */
-  public static function validateAccountingBatch(TODO) {
-  }
-
 }
