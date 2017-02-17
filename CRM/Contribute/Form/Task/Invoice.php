@@ -313,6 +313,13 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
         $stateProvinceAbbreviation = '';
       }
 
+      if (!empty($billingAddress[$contribution->contact_id]['country_id'])) {
+        $billingAddressCountry = CRM_Core_PseudoConstant::country($billingAddress[$contribution->contact_id]['country_id']);
+      }
+      else {
+        $billingAddressCountry = '';
+      }
+
       if ($contribution->contribution_status_id == $refundedStatusId || $contribution->contribution_status_id == $cancelledStatusId) {
         if (is_null($contribution->creditnote_id)) {
           $creditNoteId = CRM_Contribute_BAO_Contribution::createCreditNoteId();
@@ -447,6 +454,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
         'supplemental_address_1' => CRM_Utils_Array::value('supplemental_address_1', CRM_Utils_Array::value($contribution->contact_id, $billingAddress)),
         'supplemental_address_2' => CRM_Utils_Array::value('supplemental_address_2', CRM_Utils_Array::value($contribution->contact_id, $billingAddress)),
         'city' => CRM_Utils_Array::value('city', CRM_Utils_Array::value($contribution->contact_id, $billingAddress)),
+        'country' => $billingAddressCountry,
         'stateProvinceAbbreviation' => $stateProvinceAbbreviation,
         'postal_code' => CRM_Utils_Array::value('postal_code', CRM_Utils_Array::value($contribution->contact_id, $billingAddress)),
         'is_pay_later' => $contribution->is_pay_later,
