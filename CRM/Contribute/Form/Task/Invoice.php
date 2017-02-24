@@ -322,7 +322,10 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
           $creditNoteId = $contribution->creditnote_id;
         }
       }
+
+      // get/generate invoice ID
       $invoiceId = CRM_Utils_Array::value('invoice_prefix', $prefixValue) . "" . $contribution->id;
+      CRM_Utils_Hook::invoiceNumber($invoiceId, $contribution);
 
       //to obtain due date for PDF invoice
       $contributionReceiveDate = date('F j,Y', strtotime(date($input['receive_date'])));
@@ -466,6 +469,9 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
       if (isset($creditNoteId)) {
         $tplParams['creditnote_id'] = $creditNoteId;
       }
+
+      // call the hook in case anyone has anything to add to those
+      CRM_Utils_Hook::invoiceParams($tplParams, $contribution);
 
       $pdfFileName = "{$invoiceId}.pdf";
       $sendTemplateParams = array(
