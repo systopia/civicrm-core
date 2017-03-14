@@ -200,6 +200,9 @@ civicrm_contact AS contact_a {$this->_aclFrom}
     $clauses[] = "contrib.contact_id = contact_a.id";
     $clauses[] = "contrib.is_test = 0";
 
+    // only consider 'Complete' contributions, see CRM-?????
+    $clauses[] = "contrib.contribution_status_id = 1";
+
     $startTime = !empty($this->_formValues['start_date_time']) ? $this->_formValues['start_date_time'] : '00:00:00';
     $endTime = !empty($this->_formValues['end_date_time']) ? $this->_formValues['end_date_time'] : '23:59:59';
 
