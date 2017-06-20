@@ -2246,11 +2246,11 @@ class CRM_Contact_BAO_Query {
       }
       else {
         if ($tableName == 'civicrm_contact') {
-          $fieldName = "LOWER(contact_a.{$fieldName})";
+          $fieldName = self::caseImportant($op) ? "LOWER(contact_a.{$fieldName})" : "contact_a.{$fieldName}";
         }
         else {
           if ($op != 'IN' && !is_numeric($value)) {
-            $fieldName = "LOWER({$field['where']})";
+            $fieldName = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}";
           }
           else {
             $fieldName = "{$field['where']}";
@@ -5402,8 +5402,9 @@ AND   displayRelType.is_active = 1
    * @return bool
    */
   public static function caseImportant($op) {
-    return
-      in_array($op, array('LIKE', 'IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY')) ? FALSE : TRUE;
+    return FALSE; // case should never be important, see CRM-19811
+    // return
+    //   in_array($op, array('LIKE', 'IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY')) ? FALSE : TRUE;
   }
 
   /**
