@@ -282,6 +282,7 @@ UNION
    *
    */
   public static function createCurrentEmployerRelationship($contactID, $organization, $previousEmployerID = NULL, $newContact = FALSE) {
+    return; // DISABLED, see HBS-5193
     //if organization name is passed. CRM-15368,CRM-15547
     if ($organization && !is_numeric($organization)) {
       $organizationParams['organization_name'] = $organization;
