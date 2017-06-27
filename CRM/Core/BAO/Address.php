@@ -1133,7 +1133,8 @@ SELECT is_primary,
 
     // create relationship between ontacts who share an address
     if ($sharedContactType == 'Organization') {
-      return CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($currentContactId, $sharedContactId);
+      // DISABLED: AUTOMATED MANAGEMENT OF 'EMPLOYEE OF' RELATIONSHIP
+      // return CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($currentContactId, $sharedContactId);
     }
 
     // get the relationship type id of "Household Member of"
