@@ -87,3 +87,8 @@
 
 {/if}
 {/if}
+
+<script type="text/javascript">
+// reset the URL to avoid repeated execution
+window.history.replaceState("", "", "{$jobs_base_url}");
+</script>

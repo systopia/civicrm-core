@@ -113,6 +113,9 @@ class CRM_Admin_Page_Job extends CRM_Core_Page_Basic {
    * @return void
    */
   public function run() {
+    // pass the base URL to template
+    $this->assign('jobs_base_url', CRM_Utils_System::url('civicrm/admin/job', 'reset=1'));
+
     // set title and breadcrumb
     CRM_Utils_System::setTitle(ts('Settings - Scheduled Jobs'));
     $breadCrumb = array(
