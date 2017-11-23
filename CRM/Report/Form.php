@@ -2056,6 +2056,17 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           $retValue = $value;
           break;
         }
+        elseif ($htmlType == 'Multi-Select') {
+          $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+          $customData = array();
+          foreach ($value as $val) {
+            if ($val) {
+              $customData[] = $fieldValueMap[$customField['option_group_id']][$val];
+            }
+          }
+          $retValue = implode(', ', $customData);
+          break;
+        }
         else {
           $customField['options'] = CRM_Core_BAO_CustomOption::getCustomOption($customField['id']);
           $retValue = $customField['options'][$value]['label'];
