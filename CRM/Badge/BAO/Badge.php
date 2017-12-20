@@ -489,6 +489,11 @@ class CRM_Badge_BAO_Badge {
         if (strstr($key, 'custom_') && isset($value)) {
           $value = CRM_Core_BAO_CustomField::displayValue($value, substr($key, 7), $dao->contact_id);
         }
+        // treat greetings differently (see CRM-18008)
+        if ($key == 'addressee' || $key == 'email_greeting' || $key == 'postal_greeting') {
+          $display_key = $key . '_display';
+          $value = isset($dao->$display_key) ? $dao->$display_key : NULL;
+        }
         $rows[$dao->participant_id][$key] = $value;
       }
     }
