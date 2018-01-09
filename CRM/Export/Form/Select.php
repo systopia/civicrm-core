@@ -70,6 +70,8 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
 
   public $_componentTable;
 
+  public $_customSearchID;
+
   /**
    * Build all the data structures needed to build the form.
    *
@@ -79,13 +81,7 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
    */
   public function preProcess() {
     //special case for custom search, directly give option to download csv file
-    $customSearchID = $this->get('customSearchID');
-    if ($customSearchID) {
-      CRM_Export_BAO_Export::exportCustom($this->get('customSearchClass'),
-        $this->get('formValues'),
-        $this->get(CRM_Utils_Sort::SORT_ORDER)
-      );
-    }
+    $this->_customSearchID = $this->get('customSearchID');
 
     $this->_selectAll = FALSE;
     $this->_exportMode = self::CONTACT_EXPORT;
@@ -93,7 +89,10 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
     $this->_componentClause = NULL;
 
     // get the submitted values based on search
-    if ($this->_action == CRM_Core_Action::ADVANCED) {
+    if ($this->_customSearchID) {
+      $values = $this->get('formValues');
+      $this->assign('exportCustomSearchField', TRUE);
+    } elseif ($this->_action == CRM_Core_Action::ADVANCED) {
       $values = $this->controller->exportValues('Advanced');
     }
     elseif ($this->_action == CRM_Core_Action::PROFILE) {
@@ -253,7 +252,7 @@ FROM   {$this->_componentTable}
     $exportOptions = $mergeOptions = $postalMailing = array();
     $exportOptions[] = $this->createElement('radio',
       NULL, NULL,
-      ts('Export PRIMARY fields'),
+      ts('Export %1 fields', array(1 => empty($this->_customSearchID) ? 'PRIMARY' : 'custom search')),
       self::EXPORT_ALL,
       array('onClick' => 'showMappingOption( );')
     );
@@ -418,20 +417,27 @@ FROM   {$this->_componentTable}
     }
 
     if ($exportOption == self::EXPORT_ALL) {
-      CRM_Export_BAO_Export::exportComponents($this->_selectAll,
-        $this->_componentIds,
-        $this->get('queryParams'),
-        $this->get(CRM_Utils_Sort::SORT_ORDER),
-        NULL,
-        $this->get('returnProperties'),
-        $this->_exportMode,
-        $this->_componentClause,
-        $this->_componentTable,
-        $mergeSameAddress,
-        $mergeSameHousehold,
-        $exportParams,
-        $this->get('queryOperator')
-      );
+      if ($this->_customSearchID) {
+        CRM_Export_BAO_Export::exportCustom($this->get('customSearchClass'),
+          $this->get('formValues'),
+          $this->get(CRM_Utils_Sort::SORT_ORDER)
+          );
+      } else {
+        CRM_Export_BAO_Export::exportComponents($this->_selectAll,
+          $this->_componentIds,
+          $this->get('queryParams'),
+          $this->get(CRM_Utils_Sort::SORT_ORDER),
+          NULL,
+          $this->get('returnProperties'),
+          $this->_exportMode,
+          $this->_componentClause,
+          $this->_componentTable,
+          $mergeSameAddress,
+          $mergeSameHousehold,
+          $exportParams,
+          $this->get('queryOperator')
+        );
+      }
     }
 
     //reset map page
