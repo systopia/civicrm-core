@@ -2149,7 +2149,7 @@ WHERE  {$whereClause}";
             $type = explode('-', $locationFieldName);
 
             $actualDBFieldName = $type[0];
-            $outputFieldName = $locationType . '-' . $query->_fields[$actualDBFieldName]['title'];
+            $outputFieldName = $locationType . '-' . $query->_fields[$actualDBFieldName]['name'];
             $daoFieldName = CRM_Utils_String::munge($locationType) . '-' . $actualDBFieldName;
 
             if (!empty($type[1])) {

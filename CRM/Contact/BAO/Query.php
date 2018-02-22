@@ -1011,7 +1011,7 @@ class CRM_Contact_BAO_Query {
         $this->_useGroupBy = TRUE;
       }
 
-      $name = str_replace(' ', '_', $name);
+      $name = CRM_Utils_String::munge($name);
 
       $tName = "$name-location_type";
       $ltName = "`$name-location_type`";
