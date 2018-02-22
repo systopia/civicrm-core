@@ -2006,6 +2006,8 @@ WHERE  {$whereClause}";
    * @return array
    */
   public static function setHeaderRows($field, $headerRows, $sqlColumns, $query, $value, $phoneTypes, $imProviders, $contactRelationshipTypes, $relationQuery, $selectedPaymentFields) {
+    // be prepared to deal with composed fields (e.g. work-street_address)
+    $composed_field = explode('-', $field);
 
     // Split campaign into 2 fields for id and title
     if (substr($field, -14) == 'campaign_title') {
@@ -2016,6 +2018,9 @@ WHERE  {$whereClause}";
     }
     elseif (isset($query->_fields[$field]['title'])) {
       $headerRows[] = $query->_fields[$field]['title'];
+    }
+    elseif (isset($composed_field[1]) && isset($query->_fields[$composed_field[1]]['title'])) {
+      $headerRows[] = $composed_field[0] . '-' . $query->_fields[$composed_field[1]]['title'];
     }
     elseif ($field == 'phone_type_id') {
       $headerRows[] = ts('Phone Type');
