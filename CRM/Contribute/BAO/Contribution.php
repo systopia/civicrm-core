@@ -1512,7 +1512,7 @@ LEFT JOIN  civicrm_contribution contribution ON ( componentPayment.contribution_
       CRM_Core_Error::fatal();
     }
 
-    $memberships = &$objects['membership'];
+    $memberships = array(); // disable membership adjustments, was: &$objects['membership'];
     $participant = &$objects['participant'];
     $pledgePayment = &$objects['pledge_payment'];
     $contribution = &$objects['contribution'];
