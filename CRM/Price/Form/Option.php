@@ -84,8 +84,12 @@ class CRM_Price_Form_Option extends CRM_Core_Form {
 
       CRM_Price_BAO_PriceFieldValue::retrieve($params, $defaults);
 
-      // fix the display of the monetary value, CRM-4038
-      $defaults['value'] = CRM_Utils_Money::format(CRM_Utils_Array::value('value', $defaults), NULL, '%a');
+      // amount is in use as at CiviCRM 5.6. 'value' may not be...
+      foreach (['value', 'amount'] as $moneyField) {
+        if (isset($defaults[$moneyField])) {
+          $defaults[$moneyField] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($defaults[$moneyField]);
+        }
+      }
     }
 
     $memberComponentId = CRM_Core_Component::getComponentID('CiviMember');
