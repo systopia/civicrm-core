@@ -1451,7 +1451,13 @@ class CRM_Utils_Token {
     }
 
     // Remove null contact fields from $greetingTokens
-    $greetingTokens['contact'] = array_diff($greetingTokens['contact'], $nullFields);
+    if (!array_key_exists('contact', $greetingTokens) || !is_array($greetingTokens['contact'])) {
+      // this simply prevents warnings
+      $greetingTokens['contact'] = array();
+      $greetingTokensOriginal['contact'] = array();
+    } else {
+      $greetingTokens['contact'] = array_diff($greetingTokens['contact'], $nullFields);
+    }
 
     // Also remove them from $tokenString
     $removedTokens = array_diff($greetingTokensOriginal['contact'], $greetingTokens['contact']);
