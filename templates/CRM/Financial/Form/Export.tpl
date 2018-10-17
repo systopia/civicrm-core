@@ -53,7 +53,7 @@
 {literal}
 <script type="text/javascript">
   CRM.$(function($) {
-    $('input[name="export_format"]').filter('[value=IIF]').prop('checked', true);
+    $('input[name="export_format"]').filter('[value=SAGE]').prop('checked', true);
     $('#_qf_Export_next').click(function(){
       $(this).hide();
       $('#_qf_Export_cancel').val('{/literal}{ts}Done{/ts}{literal}');

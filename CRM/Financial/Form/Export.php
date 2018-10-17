@@ -127,12 +127,11 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
 
     $optionTypes = array(
       'SAGE' => ts('Export to SAGE'),
-      'IIF' => ts('Export to IIF'),
-      'CSV' => ts('Export to CSV'),
+      'IIF'  => ts('Export to IIF'),
+      'CSV'  => ts('Export to CSV'),
     );
 
     $this->addRadio('export_format', NULL, $optionTypes, NULL, '<br/>', TRUE);
-    $this->setDefaultValues(['export_format' => 'SAGE']);
 
     $this->addButtons(
       array(
