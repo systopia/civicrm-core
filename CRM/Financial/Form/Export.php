@@ -132,6 +132,7 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
     );
 
     $this->addRadio('export_format', NULL, $optionTypes, NULL, '<br/>', TRUE);
+    $this->setDefaultValues(['export_format' => 'SAGE']);
 
     $this->addButtons(
       array(
