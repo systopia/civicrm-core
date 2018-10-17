@@ -86,7 +86,7 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
       else {
         $this->_batchIds = $this->get('batchIds');
       }
-      if (!empty($_GET['export_format']) && in_array($_GET['export_format'], array('IIF', 'CSV'))) {
+      if (!empty($_GET['export_format']) && in_array($_GET['export_format'], array('SAGE', 'IIF', 'CSV'))) {
         $this->_exportFormat = $_GET['export_format'];
       }
     }
@@ -126,6 +126,7 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
     }
 
     $optionTypes = array(
+      'SAGE' => ts('Export to SAGE'),
       'IIF' => ts('Export to IIF'),
       'CSV' => ts('Export to CSV'),
     );
@@ -163,6 +164,23 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
     elseif (!empty($this->_batchIds)) {
       $batchIds = explode(',', $this->_batchIds);
     }
+
+    // verify batch integrety, abort export if validation failed
+    if (method_exists("CRM_Financial_BAO_ExportFormat_SAGE", "verifyBatchIntegrety")) {
+      $errors = array();
+      if (!CRM_Financial_BAO_ExportFormat_SAGE::verifyBatchIntegrety($batchIds, $errors)) {
+        // compile error text
+        $error_text = "<p>This batch cannot be exported, please fix the following problems:<ul>";
+        foreach ($errors as $error) {
+          $error_link = CRM_Utils_System::url('civicrm/contact/view/contribution', "reset=1&id={$error['contribution_id']}&cid={$error['contact_id']}&action=view");
+          $error_text .= "<li><a href='{$error_link}'>Contribution [{$error['contribution_id']}]</a>: {$error['error_message']}</li>";
+        }
+        $error_text .= "</ul></p>";
+        CRM_Core_Session::setStatus($error_text, "Validation Failed", 'error');
+        return;
+      }
+    }
+
     // Recalculate totals
     $totals = CRM_Batch_BAO_Batch::batchTotals($batchIds);
 
