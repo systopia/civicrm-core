@@ -180,6 +180,7 @@ CRM.$(function($) {
               <div>\
                 <label>{ts escape="js"}Format:{/ts}</label>\
                 <select class="export-format">\
+                  <option value="SAGE">SAGE</option>\
                   <option value="IIF">IIF</option>\
                   <option value="CSV">CSV</option>\
                 </select>\
