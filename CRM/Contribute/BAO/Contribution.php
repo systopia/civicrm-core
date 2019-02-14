@@ -3570,6 +3570,7 @@ INNER JOIN civicrm_activity ON civicrm_activity_contact.activity_id = civicrm_ac
       foreach ($params['line_item'] as $fieldId => $fields) {
         foreach ($fields as $fieldValueId => $lineItemDetails) {
           $prevFinancialItem = CRM_Financial_BAO_FinancialItem::getPreviousFinancialItem($lineItemDetails['id']);
+          if (!$prevFinancialItem) continue;
           $receiveDate = CRM_Utils_Date::isoToMysql($params['prevContribution']->receive_date);
           if ($params['contribution']->receive_date) {
             $receiveDate = CRM_Utils_Date::isoToMysql($params['contribution']->receive_date);

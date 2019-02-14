@@ -289,16 +289,21 @@ WHERE cc.id IN (' . implode(',', $contactIds) . ') AND con.is_test = 0';
    * @return array
    */
   public static function getPreviousFinancialItem($entityId) {
-    $params = array(
-      'entity_id' => $entityId,
-      'entity_table' => 'civicrm_line_item',
-      'options' => array('limit' => 1, 'sort' => 'id DESC'),
-    );
-    $salesTaxFinancialAccounts = civicrm_api3('FinancialAccount', 'get', array('is_tax' => 1));
-    if ($salesTaxFinancialAccounts['count']) {
-      $params['financial_account_id'] = array('NOT IN' => array_keys($salesTaxFinancialAccounts['values']));
+    try {
+      $params = array(
+        'entity_id' => $entityId,
+        'entity_table' => 'civicrm_line_item',
+        'options' => array('limit' => 1, 'sort' => 'id DESC'),
+      );
+      $salesTaxFinancialAccounts = civicrm_api3('FinancialAccount', 'get', array('is_tax' => 1));
+      if ($salesTaxFinancialAccounts['count']) {
+        $params['financial_account_id'] = array('NOT IN' => array_keys($salesTaxFinancialAccounts['values']));
+      }
+      return civicrm_api3('FinancialItem', 'getsingle', $params);
+    } catch(Exception $ex) {
+      // probably doesn't exist
+      return NULL;
     }
-    return civicrm_api3('FinancialItem', 'getsingle', $params);
   }
 
 }
