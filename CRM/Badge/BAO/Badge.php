@@ -470,7 +470,7 @@ class CRM_Badge_BAO_Badge {
     }
 
     // hardcoded to fix HBS-8764
-    $queryString = "$select $from $where $having ORDER BY $sortOrder";
+    $queryString = "$select $from $where $having ORDER BY contact_a.sort_name";
 
     $dao = CRM_Core_DAO::executeQuery($queryString);
     $rows = array();
