@@ -473,7 +473,7 @@ class CRM_Badge_BAO_Badge {
     if ($form->get(CRM_Utils_Sort::SORT_ORDER)) {
       $sortOrder = $form->get(CRM_Utils_Sort::SORT_ORDER);
       if (!empty($sortOrder)) {
-        $sortOrder = " ORDER BY $sortOrder";
+        $sortOrder = " ORDER BY contact_a.sort_name";
       }
     }
     $queryString = "$select $from $where $having $sortOrder";
