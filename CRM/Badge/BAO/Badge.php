@@ -469,14 +469,8 @@ class CRM_Badge_BAO_Badge {
       $where .= " AND {$form->_componentClause}";
     }
 
-    $sortOrder = NULL;
-    if ($form->get(CRM_Utils_Sort::SORT_ORDER)) {
-      $sortOrder = $form->get(CRM_Utils_Sort::SORT_ORDER);
-      if (!empty($sortOrder)) {
-        $sortOrder = " ORDER BY $sortOrder";
-      }
-    }
-    $queryString = "$select $from $where $having $sortOrder";
+    // hardcoded to fix HBS-8764
+    $queryString = "$select $from $where $having ORDER BY contact_a.sort_name";
 
     $dao = CRM_Core_DAO::executeQuery($queryString);
     $rows = array();
