@@ -36,7 +36,29 @@
  */
 class CRM_Financial_BAO_Rules {
 
-  public static function supportsEditPaymentLinkedToPaymentProcessor() {
+  /**
+   * @var CRM_Financial_BAO_Rules the rules instance to be used
+   */
+  private static $_rules_instance = NULL;
+
+  /**
+   * Get a Rules object representing the set of financial rules
+   *
+   * @return CRM_Financial_BAO_Rules the rules object
+   */
+  public static function getFinancialRules() {
+    if (self::$_rules_instance === NULL) {
+      $rules_class_name = 'CRM_Financial_BAO_Rules';
+      CRM_Utils_Hook::alterFinancialRulesClass($rules_class_name);
+      self::$_rules_instance = new CRM_Financial_BAO_Rules();
+    }
+    return self::$_rules_instance;
+  }
+
+  /**
+   * @todo docs
+   */
+  public function supportsEditPaymentLinkedToPaymentProcessor() {
     return TRUE;
   }
 
