@@ -2545,18 +2545,4 @@ abstract class CRM_Utils_Hook {
     );
   }
 
-  /**
-   * Allows you to provide a new set of financial rules.
-   *
-   * @param $rules_class_name string name of the class implementing the financial rules. The class has to extend CRM_Financial_BAO_Rules
-   * @return mixed
-   */
-  public static function alterFinancialRulesClass(&$rules_class_name) {
-    return self::singleton()->invoke(['FinancialRulesClass'],
-        $rules_class_name, self::$_nullObject, self::$_nullObject,
-        self::$_nullObject, self::$_nullObject, self::$_nullObject,
-        'civicrm_alterFinancialRulesClass'
-    );
-  }
-
 }
