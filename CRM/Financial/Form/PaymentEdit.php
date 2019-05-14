@@ -71,7 +71,7 @@ class CRM_Financial_Form_PaymentEdit extends CRM_Core_Form {
     $this->_contributionID = CRM_Utils_Request::retrieve('contribution_id', 'Positive', $this);
 
     $this->_values = civicrm_api3('FinancialTrxn', 'getsingle', ['id' => $this->_id]);
-    if (!CRM_Financial_BAO_Rules::supportsEditPaymentLinkedToPaymentProcessor() && !empty($this->_values['payment_processor_id'])) {
+    if (!empty($this->_values['payment_processor_id']) && !\Civi::service('civicrm_rules_financial')->supportsEditPaymentLinkedToPaymentProcessor()) {
       CRM_Core_Error::statusBounce(ts('You cannot update this payment as it is tied to a payment processor'));
     }
   }

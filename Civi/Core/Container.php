@@ -286,6 +286,11 @@ class Container {
       \Civi\Core\Resolver::singleton()->call(CIVICRM_FLEXMAILER_HACK_SERVICES, [$container]);
     }
 
+    $container->setDefinition('civicrm_rules_financial', new Definition(
+        'Civi\Financial\Rules',
+        []
+    ));
+
     \CRM_Utils_Hook::container($container);
 
     return $container;
