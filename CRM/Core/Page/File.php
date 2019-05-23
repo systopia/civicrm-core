@@ -75,6 +75,9 @@ class CRM_Core_Page_File extends CRM_Core_Page {
       }
     }
     else {
+      if (!preg_match("#^[a-z0-9-+./]+$#", $mimeType) && !empty($mimeType)) {
+        throw new Exception("Invalid mime type detected! See AIVL-4397");
+      }
       CRM_Utils_System::download(
         CRM_Utils_File::cleanFileName(basename($path)),
         $mimeType,
