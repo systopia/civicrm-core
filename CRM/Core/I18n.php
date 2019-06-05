@@ -782,8 +782,13 @@ function ts($text, $params = []) {
     $areSettingsAvailable = (bool) \Civi\Core\Container::getBootService('settings_manager');
     if ($areSettingsAvailable) {
       $config = CRM_Core_Config::singleton();
-      if (isset($config->customTranslateFunction) and function_exists($config->customTranslateFunction)) {
-        $function = $config->customTranslateFunction;
+      if (isset($config->customTranslateFunction)) {
+        if (function_exists($config->customTranslateFunction)) {
+          $function = $config->customTranslateFunction;
+        } else {
+          // maybe it doesn't exist yet... try again later
+          $areSettingsAvailable = FALSE;
+        }
       }
     }
   }
