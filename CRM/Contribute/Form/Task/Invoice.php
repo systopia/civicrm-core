@@ -295,7 +295,9 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
       if (!$contribution->invoice_number) {
         $invoice_number = CRM_Contribute_BAO_Contribution::getInvoiceNumber($contribution->id);
         CRM_Utils_Hook::invoiceNumber($invoice_number, $contribution);
+        // keep invoice_number and invoice_id identical:
         $contribution->invoice_number = $invoice_number;
+        $contribution->invoice_id = $invoice_number;
       }
 
       //to obtain due date for PDF invoice
