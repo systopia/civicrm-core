@@ -31,7 +31,7 @@
  * @copyright CiviCRM LLC (c) 2004-2019
  */
 
-use function xKerman\Restricted\unserialize;
+// FIXME reinstate: use function xKerman\Restricted\unserialize;
 use xKerman\Restricted\UnserializeFailedException;
 
 require_once 'HTML/QuickForm/Rule/Email.php';
