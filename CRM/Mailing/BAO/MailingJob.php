@@ -785,6 +785,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
       return FALSE;
     }
 
+    // Workaround for wrongly reported SMTP error 450
+    if ($code === '450') {
+      return FALSE;
+    }
+
     if (strpos($message, 'Failed to set sender') !== FALSE) {
       return TRUE;
     }
