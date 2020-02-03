@@ -96,7 +96,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
 
     // check that all the contribution ids have status Completed, Pending, Refunded.
     $this->_contributionStatusId = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
-    $status = ['Completed', 'Pending', 'Refunded'];
+    $status = ['Completed', 'Pending', 'Refunded', 'In Progress'];
     $statusId = [];
     foreach ($this->_contributionStatusId as $key => $value) {
       if (in_array($value, $status)) {
