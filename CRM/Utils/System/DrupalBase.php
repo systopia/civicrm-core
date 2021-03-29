@@ -211,12 +211,7 @@ abstract class CRM_Utils_System_DrupalBase extends CRM_Utils_System_Base {
    * @inheritDoc
    */
   public function getUserIDFromUserObject($user) {
-    foreach (['mail', 'init', 'name'] as $user_property) {
-      if (!empty($user->$user_property) && CRM_Utils_Rule::email(trim($user->$user_property))) {
-        return trim($user->$user_property);
-      }
-    }
-    return NULL;
+    return !empty($user->uid) ? $user->uid : NULL;
   }
 
   /**
