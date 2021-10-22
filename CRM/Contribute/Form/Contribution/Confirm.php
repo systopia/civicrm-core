@@ -2288,6 +2288,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
       $this->_params = CRM_Core_Payment_Form::mapParams($this->_bltID, $this->_params, $membershipParams, TRUE);
       $this->doMembershipProcessing($contactID, $membershipParams, $premiumParams, $this->_lineItem);
+      CRM_Utils_Hook::postPP($this->_params, ['membershipParams' => $membershipParams]);
     }
     else {
       // at this point we've created a contact and stored its address etc
@@ -2326,6 +2327,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         // It seems this line is hit when there is a zero dollar transaction & in tests, not sure when else.
         $this->completeTransaction($result, $result['contribution']->id);
       }
+      CRM_Utils_Hook::postPP($paymentParams, ['result' => $result]);
       return $result;
     }
   }

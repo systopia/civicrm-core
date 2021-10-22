@@ -2530,4 +2530,24 @@ abstract class CRM_Utils_Hook {
     );
   }
 
+  /**
+   * Post PaymentProcessor Hook will be invoked after the payment processor
+   *   and the page have completed their work
+   *
+   * @param array $parameters
+   *   all payment processor parameters
+   *
+   * @param array $context_data
+   *   additional context data, depending on where the hook is called
+   *
+   * @return mixed
+   */
+  public static function postPP($parameters, $context_data) {
+    return self::singleton()->invoke(['parameters', 'context_data'],
+                                     $parameters, $context_data, self::$_nullObject,
+                                     self::$_nullObject, self::$_nullObject, self::$_nullObject,
+                                     'civicrm_postPP'
+    );
+  }
+
 }
