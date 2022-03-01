@@ -241,7 +241,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
       }
 
       if (CRM_Core_Permission::check('create mailings')
-       && (CRM_Mailing_Info::workflowEnabled() && CRM_Core_Permission::access('CiviMail'))
+       && (CRM_Mailing_Info::workflowEnabled() || CRM_Core_Permission::access('CiviMail'))
       ) {
         self::$_tasks[self::CREATE_MAILING] = [
           'title' => ts('Email - schedule/send via CiviMail'),
