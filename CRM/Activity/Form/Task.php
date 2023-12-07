@@ -28,11 +28,14 @@ class CRM_Activity_Form_Task extends CRM_Core_Form_Task {
    */
   public $_activityHolderIds;
 
+  protected array $_contactIdsByActivityId = [];
+
   /**
    * Build all the data structures needed to build the form.
    */
   public function preProcess() {
     self::preProcessCommon($this);
+    $this->_contactIdsByActivityId = $this->get('contactIdsByActivityId') ?? [];
   }
 
   /**
@@ -133,7 +136,28 @@ WHERE  activity_id IN ( $IDs ) AND
    * @return array
    */
   public function getTokenSchema(): array {
-    return ['activityId'];
+    return [] === $this->_contactIdsByActivityId ? ['activityId'] : ['activityId', 'contactId'];
+  }
+
+  protected function getRows(): array {
+    if ([] === $this->_contactIdsByActivityId) {
+      return parent::getRows();
+    }
+
+    $rows = [];
+    foreach ($this->_contactIdsByActivityId as $activityId => $contactIds) {
+      foreach ($contactIds as $contactId) {
+        $rows[] = [
+          'contact_id' => $contactId,
+          'schema' => [
+            'contactId' => $contactId,
+            'activityId' => $activityId,
+          ],
+        ];
+      }
+    }
+
+    return $rows;
   }
 
 }

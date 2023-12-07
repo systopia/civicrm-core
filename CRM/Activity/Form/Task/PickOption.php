@@ -122,29 +122,36 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
     $this->controller->resetPage('Email');
     $params = $this->exportValues();
     $this->_contacts = [];
+    $this->_contactIdsByActivityId = [];
 
     $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
     $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
     $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     // Get assignee contacts.
     if (!empty($params['assigned_to'])) {
-      foreach ($this->_activityHolderIds as $key => $id) {
+      foreach ($this->_activityHolderIds as $id) {
         $ids = array_keys(CRM_Activity_BAO_ActivityContact::getNames($id, $assigneeID));
         $this->_contacts = array_merge($this->_contacts, $ids);
+        $this->_contactIdsByActivityId[$id] = array_unique(array_merge($this->_contactIdsByActivityId[$id] ?? [], $ids));
       }
     }
     // Get target contacts.
     if (!empty($params['with_contact'])) {
-      foreach ($this->_activityHolderIds as $key => $id) {
+      foreach ($this->_activityHolderIds as $id) {
         $ids = array_keys(CRM_Activity_BAO_ActivityContact::getNames($id, $targetID));
         $this->_contacts = array_merge($this->_contacts, $ids);
+        $this->_contactIdsByActivityId[$id] = array_unique(array_merge($this->_contactIdsByActivityId[$id] ?? [], $ids));
       }
     }
     // Get 'Added by' contacts.
     if (!empty($params['created_by'])) {
       parent::setContactIDs();
-      if (!empty($this->_contactIds)) {
-        $this->_contacts = array_merge($this->_contacts, $this->_contactIds);
+      foreach ($this->_activityHolderIds as $id) {
+        $ids = array_keys(CRM_Activity_BAO_ActivityContact::getNames($id, $sourceID));
+        $this->_contacts = array_merge($this->_contacts, $ids);
+        $this->_contactIdsByActivityId[$id] =
+          array_unique(array_merge($this->_contactIdsByActivityId[$id] ?? [], $ids));
       }
     }
     $this->_contacts = array_unique($this->_contacts);
@@ -160,6 +167,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
     }
 
     $this->set('contacts', $this->_contacts);
+    $this->set('contactIdsByActivityId', $this->_contactIdsByActivityId);
   }
 
 }
