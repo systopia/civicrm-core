@@ -1173,6 +1173,25 @@ class CRM_Core_DAO extends DB_DataObject {
   }
 
   /**
+   * Check if there is a given column in a specific table.
+   *
+   * @deprecated
+   * @see CRM_Core_BAO_SchemaHandler::checkIfFieldExists
+   *
+   * @param string $tableName
+   * @param string $columnName
+   * @param bool $i18nRewrite
+   *   Whether to rewrite the query on multilingual setups.
+   *
+   * @return bool
+   *   true if exists, else false
+   */
+  public static function checkFieldExists($tableName, $columnName, $i18nRewrite = TRUE) {
+    CRM_Core_Error::deprecatedFunctionWarning('CRM_Core_BAO_SchemaHandler::checkIfFieldExists');
+    return CRM_Core_BAO_SchemaHandler::checkIfFieldExists($tableName, $columnName, $i18nRewrite);
+  }
+
+  /**
    * Gets the names of all enabled schema tables.
    *
    * - Includes tables from core, components & enabled extensions.
@@ -2512,6 +2531,30 @@ SELECT contact_id
         $params[$key] = $value;
       }
     }
+  }
+
+  /**
+   * @param string $prefix
+   * @param bool $addRandomString
+   * @param null $string
+   *
+   * @return string
+   * @deprecated
+   * @see CRM_Utils_SQL_TempTable
+   */
+  public static function createTempTableName($prefix = 'civicrm', $addRandomString = TRUE, $string = NULL) {
+    CRM_Core_Error::deprecatedFunctionWarning('Use CRM_Utils_SQL_TempTable interface to create temporary tables');
+    $tableName = $prefix . "_temp";
+
+    if ($addRandomString) {
+      if ($string) {
+        $tableName .= "_" . $string;
+      }
+      else {
+        $tableName .= "_" . md5(uniqid('', TRUE));
+      }
+    }
+    return $tableName;
   }
 
   /**
