@@ -96,7 +96,11 @@ function financialacls_civicrm_selectWhereClause($entity, &$clauses) {
       if ($entity === 'Contribution') {
         $unavailableTypes = _financialacls_civicrm_get_inaccessible_financial_types();
         if (!empty($unavailableTypes)) {
-          $clauses['id'][] = 'NOT IN (SELECT contribution_id FROM civicrm_line_item WHERE contribution_id IS NOT NULL AND financial_type_id IN (' . implode(',', $unavailableTypes) . '))';
+          // The sub-query used to filter for "contribution_id IS NOT NULL" which causes no index being used for the
+          // "contribution_id" field ("Full scan on NULL key"), leading to slow queries for large numbers of
+          // contributions. Instead, NULL contribution IDs are now being replaced with an invalid value (-1) in the
+          // SELECT clause.
+          $clauses['id'][] = 'NOT IN (SELECT IFNULL(contribution_id, -1) FROM civicrm_line_item WHERE financial_type_id IN (' . implode(',', $unavailableTypes) . '))';
         }
       }
       break;
