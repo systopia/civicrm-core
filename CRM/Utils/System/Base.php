@@ -1257,4 +1257,32 @@ abstract class CRM_Utils_System_Base {
   public function postContainerBoot(): void {
   }
 
+  /**
+   * Does this CMS / UF support a CMS specific logging mechanism?
+   * @todo - we should think about offering up logging mechanisms in a way that is also extensible by extensions
+   * @todo - it would be nice to provide UF specific meta for the userFrameworkLogging setting
+   *
+   * @return bool
+   */
+  public function supportsUfLogging(): bool {
+    return FALSE;
+  }
+
+  /**
+   * Does the userSystem think we are in maintenance mode?
+   *
+   * @return bool
+   */
+  public function isMaintenanceMode(): bool {
+    // if not implemented at CMS level, we assume FALSE
+    return FALSE;
+  }
+
+  /**
+   * Handle any caught Exceptions.
+   */
+  public function handleUnhandledException(\Throwable $e) {
+    CRM_Core_Error::handleUnhandledException($e);
+  }
+
 }

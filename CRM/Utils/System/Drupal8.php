@@ -15,6 +15,8 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
 /**
  * Drupal specific stuff goes here.
  */
@@ -381,6 +383,7 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
    */
   public function permissionDenied() {
     \Drupal::service('civicrm.page_state')->setAccessDenied();
+    throw new AccessDeniedHttpException();
   }
 
   /**
@@ -1013,6 +1016,33 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
     if (!$cleared && function_exists('_drupal_flush_css_js')) {
       _drupal_flush_css_js();
     }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function isMaintenanceMode(): bool {
+    try {
+      return \Drupal::state()->get('system.maintenance_mode') ?: FALSE;
+    }
+    catch (\Exception $e) {
+      // catch in case Drupal isn't fully booted and can't answer
+      //
+      // we assume we are *NOT* in maintenance mode
+      //
+      // TODO: this may not be a good assumption for e.g. cv cron job
+      // which could be exactly the sort of thing we would want to
+      // prevent running in maintenance mode... maybe we should check
+      // try to check the drupal database directly here?
+      return FALSE;
+    }
+  }
+
+  public function handleUnhandledException(\Throwable $e) {
+    if ($e instanceof AccessDeniedHttpException) {
+      throw $e;
+    }
+    CRM_Core_Error::handleUnhandledException($e);
   }
 
 }
