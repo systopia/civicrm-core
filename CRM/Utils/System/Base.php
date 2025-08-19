@@ -1262,4 +1262,21 @@ abstract class CRM_Utils_System_Base {
     return FALSE;
   }
 
+  /**
+   * Does the userSystem think we are in maintenance mode?
+   *
+   * @return bool
+   */
+  public function isMaintenanceMode(): bool {
+    // if not implemented at CMS level, we assume FALSE
+    return FALSE;
+  }
+
+  /**
+   * Handle any caught Exceptions.
+   */
+  public function handleUnhandledException(\Throwable $e) {
+    CRM_Core_Error::handleUnhandledException($e);
+  }
+
 }
