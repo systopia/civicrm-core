@@ -71,8 +71,8 @@ class CRM_Member_Page_RecurringContributions extends CRM_Core_Page {
     $recurringContributions = (array) \Civi\Api4\ContributionRecur::get(FALSE)
       ->addWhere('id', 'IN', $contributionRecurIds)
       ->addSelect('*', 'contribution_status_id:label')
-      ->indexBy('id')
-      ->execute();
+      ->execute()
+      ->indexBy('id');
 
     $recurringContributions = array_map(function ($record) {
       // add legacy keys
@@ -89,7 +89,6 @@ class CRM_Member_Page_RecurringContributions extends CRM_Core_Page {
   private function getLegacyRecurContributionIds($membershipID, array $alreadyFound) {
     $result = civicrm_api3('MembershipPayment', 'get', [
       'sequential' => 1,
-      'contribution_id.contribution_recur_id.id' => ['IS NOT NULL' => TRUE],
       'contribution_id.contribution_recur_id.id' => ['IS NOT IN' => $alreadyFound],
       'options' => ['limit' => 0],
       'return' => [

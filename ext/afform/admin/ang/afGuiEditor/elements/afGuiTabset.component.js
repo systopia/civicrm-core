@@ -20,7 +20,7 @@
         this.selectedTab = 0;
         this.searchDisplays = [];
 
-        this.node['#children'].forEach(function(tab, i) {
+        this.node['#children'].forEach((tab) => {
           tab['#children'] = tab['#children'] || [];
         });
 
@@ -46,10 +46,10 @@
         }
       };
 
-      this.addTab = function() {
+      this.addTab = () => {
         this.node['#children'].push({
           '#tag': 'af-tab',
-          'title': ts('New Tab'),
+          'title': this.isPages() ? ts('New Page') : ts('New Tab'),
           '#children': [],
         });
         this.selectTab(this.node['#children'].length - 1);
@@ -66,7 +66,7 @@
       };
 
       this.pickIcon = function(tab) {
-        afGui.pickIcon().then(function(val) {
+        afGui.pickIcon().then((val) => {
           tab.icon = val;
         });
       };
@@ -103,6 +103,8 @@
       this.getSetCount = function (tabIndex) {
         return _.wrap(tabIndex, getSetCount);
       };
+
+      this.isPages = () => this.node['page-nav-buttons'];
 
     }
   });

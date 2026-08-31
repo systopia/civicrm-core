@@ -722,6 +722,12 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     if ($this->isFormSupportsNonMembershipContributions()) {
       return (int) $this->getContributionPageValue('financial_type_id');
     }
+    // If even tho we have a membership price set no membership has been selected
+    // so use the Contribution Page value
+    // see dev/core#6496
+    if (empty($this->getFirstSelectedMembershipType())) {
+      return (int) $this->getContributionPageValue('financial_type_id');
+    }
     return (int) $this->getFirstSelectedMembershipType()['financial_type_id'];
   }
 
@@ -798,9 +804,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     $priceSetId = $this->getPriceSetID();
     // get price info
     if ($priceSetId) {
-      if ($form->_action & CRM_Core_Action::UPDATE) {
-        $form->_values['line_items'] = CRM_Price_BAO_LineItem::getLineItems($form->_id, 'contribution');
-      }
       $form->_priceSet = $this->order->getPriceSetMetadata();
       $this->setPriceFieldMetaData($this->order->getPriceFieldsMetadata());
       $form->set('priceSet', $form->_priceSet);
@@ -1058,10 +1061,11 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    *
    * @param bool $formItems
    * @param string $selectedOption
+   * @param string $context
    *
    * @noinspection PhpUnhandledExceptionInspection
    */
-  protected function buildPremiumsBlock(bool $formItems = FALSE, $selectedOption = NULL): void {
+  protected function buildPremiumsBlock(bool $formItems = FALSE, $selectedOption = NULL, $context = NULL): void {
     $selectedProductID = $this->getProductID();
     $this->add('hidden', 'selectProduct', $selectedProductID, ['id' => 'selectProduct']);
     $premiumProducts = PremiumsProduct::get()
@@ -1078,14 +1082,22 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     foreach ($premiumProducts as $premiumProduct) {
       $product = CRM_Utils_Array::filterByPrefix($premiumProduct, 'product_id.');
       $premium = CRM_Utils_Array::filterByPrefix($premiumProduct, 'premiums_id.');
-      if ($selectedProductID === $product['id'] && $selectedOption) {
-        // In this case we are on the thank you or confirm page so assign
-        // the selected option to the page for display.
-        $product['options'] = ts('Selected Option') . ': ' . $selectedOption;
-      }
-      elseif ($selectedOption) {
-        // We are on the thank you or confirm page, but this option wasn't selected.
-        continue;
+      if ($context == 'ThankYou' || $context == 'Confirm') {
+        // In this case we are on the thank you or confirm page
+        if ($selectedProductID === $product['id']) {
+          if ($selectedOption) {
+            // Assign the selected option to the page for display.
+            $product['options'] = ts('Selected Option') . ': ' . $selectedOption;
+          }
+          else {
+            // No options, but make it a string to avoid blowing up the template
+            $product['options'] = '';
+          }
+        }
+        else {
+          // We are on the thank you or confirm page, but this product wasn't selected.
+          continue;
+        }
       }
       $options = array_filter((array) $product['options']);
       $productOptions = [];
@@ -1675,7 +1687,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
           if ($membershipType->find(TRUE)) {
             // CRM-14051 - membership_type.relationship_type_id is a CTRL-A padded string w one or more ID values.
             // Convert to comma separated list.
-            $inheritedRelTypes = implode(',', CRM_Utils_Array::explodePadded($membershipType->relationship_type_id));
+            $inheritedRelTypes = implode(',', CRM_Utils_Array::explodePadded($membershipType->relationship_type_id) ?? []);
             $permContacts = CRM_Contact_BAO_Relationship::getPermissionedContacts($this->getAuthenticatedContactID(), $membershipType->relationship_type_id);
             if (array_key_exists($membership->contact_id, $permContacts)) {
               $this->_membershipContactID = $membership->contact_id;

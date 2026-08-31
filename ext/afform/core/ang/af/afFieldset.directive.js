@@ -3,14 +3,16 @@
   angular.module('af').directive('afFieldset', function() {
     return {
       restrict: 'A',
-      require: ['afFieldset', '?^^afForm'],
+      require: ['afFieldset', '?^^afForm', '?afRepeat'],
       bindToController: {
         modelName: '@afFieldset',
+        fieldData: '<',
         storeValues: '<'
       },
       link: function($scope, $el, $attr, ctrls) {
         const self = ctrls[0];
         self.afFormCtrl = ctrls[1];
+        self.afRepeatCtrl = ctrls[2];
       },
       controller: function($scope, $element, crmApi4) {
         const ctrl = this;
@@ -28,18 +30,25 @@
             $element.find('[search-name][display-name]').attr('display-name');
         };
         this.getEntity = function() {
-          return this.afFormCtrl.getEntity(this.modelName);
+          return this.afFormCtrl ? this.afFormCtrl.getEntity(this.modelName) : null;
         };
         this.getEntityType = function() {
-          return this.afFormCtrl.getEntity(this.modelName).type;
+          return this.afFormCtrl ? this.afFormCtrl.getEntity(this.modelName)?.type : null;
         };
         this.getFieldData = function() {
           const data = ctrl.getData();
-          if (!data.length) {
+          // afRepeat will handle adding items itself
+          if (!data.length && !ctrl.afRepeatCtrl) {
             data.push({fields: {}});
           }
-          return data[0].fields;
+          return data[0]?.fields;
         };
+
+        // Called by afRepeat
+        this.addRepeatItem = () => {
+          this.getData().push({fields: {}});
+        };
+
         this.getFormName = function() {
           return ctrl.afFormCtrl ? ctrl.afFormCtrl.getFormMeta().name : $scope.meta.name;
         };
@@ -76,8 +85,14 @@
           return this.reloadedStoredValues[fieldName];
         };
 
-        this.$onInit = function() {
-          $scope.$watch(ctrl.getFieldData, (newVal, oldVal) => {
+        this.$onInit = () => {
+          if (typeof this.fieldData === 'object') {
+            localData.push({
+              fields: this.fieldData,
+            });
+          }
+
+          $scope.$watch(this.getFieldData, (newVal, oldVal) => {
             $element[0].dispatchEvent(new Event('crmFormChangeFilters'));
             if (this.storeValues) {
               if (typeof newVal === 'object' && typeof oldVal === 'object' && Object.keys(newVal).length) {

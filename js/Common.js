@@ -642,11 +642,13 @@ if (!CRM.vars) CRM.vars = {};
         data = [data];
       }
       data.forEach((item) => {
-        links.push({
-          path: item.quickEdit.path,
-          icon: 'fa-pencil',
-          title: ts('Edit %1', {1: item.quickEdit.title}),
-        });
+        if (item.quickEdit?.path) {
+          links.push({
+            path: item.quickEdit.path,
+            icon: 'fa-pencil',
+            title: ts('Edit %1', {1: item.quickEdit.title}),
+          });
+        }
       });
       return links;
     }
@@ -702,7 +704,7 @@ if (!CRM.vars) CRM.vars = {};
           if (val === '') {
             return;
           }
-          var idsNeeded = _.difference(val.split(','), _.pluck(staticItems, 'id')),
+          var idsNeeded = _.difference(val.split(','), staticItems.map((item) => item.id)),
             existing = _.filter(staticItems, function(item) {
               return _.includes(val.split(','), item.id);
             });
@@ -740,11 +742,11 @@ if (!CRM.vars) CRM.vars = {};
           // Add static item to selection when clicking static links
           .on('click.crmEntity', '.crm-entityref-links-static a', function() {
             let id = $(this).attr('href').substring(1),
-              item = _.findWhere(staticItems, {id: id});
+              item = staticItems.find((item) => item.id === id);
             $el.select2('close');
             if (multiple) {
               var selection = $el.select2('data');
-              if (!_.findWhere(selection, {id: id})) {
+              if (!selection.find((item) => item.id === id)) {
                 selection.push(item);
                 $el.select2('data', selection, true);
               }
@@ -848,7 +850,7 @@ if (!CRM.vars) CRM.vars = {};
           if (val === '') {
             return;
           }
-          var idsNeeded = _.difference(val.split(','), _.pluck(stored, 'id'));
+          var idsNeeded = _.difference(val.split(','), stored.map((item) => item.id));
           var existing = _.remove(stored, function(item) {
             return _.includes(val.split(','), item.id);
           });
@@ -1034,13 +1036,13 @@ if (!CRM.vars) CRM.vars = {};
         createLinks = CRM.config.entityRef.links[entity];
       }
       else if (typeof params.contact_type === 'string') {
-        createLinks = _.where(CRM.config.entityRef.links[entity], {type: params.contact_type});
+        createLinks = CRM.config.entityRef.links[entity].filter((link) => link.type === params.contact_type);
       } else {
         // lets assume it's an array with filters such as IN etc
         createLinks = [];
         _.each(params.contact_type, function(types) {
           _.each(types, function(type) {
-            createLinks.push(_.findWhere(CRM.config.entityRef.links[entity], {type: type}));
+            createLinks.push(CRM.config.entityRef.links[entity].find((link) => link.type === type));
           });
         });
       }
@@ -1295,11 +1297,11 @@ if (!CRM.vars) CRM.vars = {};
       $('form[data-warn-changes] :input', e.target).each(function() {
         $(this).data('crm-initial-value', $(this).is(':checkbox, :radio') ? $(this).prop('checked') : $(this).val());
       });
-      $('textarea.crm-form-wysiwyg', e.target).each(function() {
-        if ($(this).hasClass("collapsed")) {
-          CRM.wysiwyg.createCollapsed(this);
+      e.target.querySelectorAll('textarea.crm-form-wysiwyg').forEach((el) => {
+        if (el.classList.contains('collapsed')) {
+          CRM.wysiwyg.createCollapsed(el);
         } else {
-          CRM.wysiwyg.create(this);
+          CRM.wysiwyg.create(el);
         }
       });
       // Submit once handlers
@@ -1810,19 +1812,16 @@ if (!CRM.vars) CRM.vars = {};
 
       // Handle clear button for form elements
       .on('click', 'a.crm-clear-link', function() {
-        $(this).css({visibility: 'hidden'}).siblings('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
-        $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
+        $(this).css({visibility: 'hidden'}).parent().find('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
         $(this).siblings('input:text').val('').trigger('change', ['crmClear']);
         return false;
       })
       .on('change keyup', 'input.crm-form-radio:checked, input[allowclear=1]', function(e, context) {
         if (context !== 'crmClear' && ($(this).is(':checked') || ($(this).is('[allowclear=1]') && $(this).val()))) {
-          $(this).siblings('.crm-clear-link').css({visibility: ''});
-          $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-clear-link').css({visibility: ''});
+          $(this).add($(this).parent('.crm-option-label-pair')).siblings('.crm-clear-link').css({visibility: ''});
         }
         if (context !== 'crmClear' && $(this).is('[allowclear=1]') && $(this).val() === '') {
-          $(this).siblings('.crm-clear-link').css({visibility: 'hidden'});
-          $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-clear-link').css({visibility: 'hidden'});
+          $(this).add($(this).parent('.crm-option-label-pair')).siblings('.crm-clear-link').css({visibility: 'hidden'});
         }
       })
 

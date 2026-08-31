@@ -32,7 +32,7 @@
                   result.push(entityName);
                 }
               }, [])
-            }, 0).then(function(data) {
+            }, 0).then((data) => {
               afGui.addMeta(data);
               initializeBlockContainer();
               ctrl.loading = false;
@@ -181,6 +181,15 @@
         return ctrl.node.max ? parseInt(ctrl.node.max, 10) : null;
       };
 
+      $scope.getSetNumber = function(paramName) {
+        return function(val) {
+          if (arguments.length) {
+            ctrl.node[paramName] = typeof val === 'string' ? parseInt(val, 10) : val;
+          }
+          return typeof ctrl.node[paramName] === 'string' ? parseInt(ctrl.node[paramName], 10) : ctrl.node[paramName];
+        };
+      };
+
       // Returns the maximum number of repeats allowed if this is a joined entity with a limit
       // Value comes from civicrm_custom_group.max_multiple for custom entities,
       // or from afformEntity php file for core entities.
@@ -192,13 +201,13 @@
       };
 
       $scope.pickAddIcon = function() {
-        afGui.pickIcon().then(function(val) {
+        afGui.pickIcon().then((val) => {
           ctrl.node['add-icon'] = val;
         });
       };
 
       $scope.pickCopyIcon = function() {
-        afGui.pickIcon().then(function(val) {
+        afGui.pickIcon().then((val) => {
           ctrl.node['copy-icon'] = val;
         });
       };
@@ -345,7 +354,7 @@
           model.entity_type = ctrl.getFieldEntityType();
         }
         dialogService.open('saveBlockDialog', '~/afGuiEditor/saveBlock.html', model, options)
-          .then(function(block) {
+          .then((block) => {
             afGui.meta.blocks[block.directive_name] = block;
             setBlockDirective(block.directive_name);
             initializeBlockContainer();
@@ -354,7 +363,7 @@
 
       this.node = ctrl.node;
 
-      this.getNodeType = function(node) {
+      this.getNodeType = (node) => {
         if (!node || !node['#tag']) {
           return null;
         }

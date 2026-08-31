@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+require_once 'CRM/Core/ClassLoader.php';
+
 /**
  * CiviCRM APIv3 utility functions.
  *
@@ -19,7 +21,6 @@
  * Initialize CiviCRM - should be run at the start of each API function.
  */
 function _civicrm_api3_initialize() {
-  require_once 'CRM/Core/ClassLoader.php';
   CRM_Core_ClassLoader::singleton()->register();
   CRM_Core_Config::singleton();
 }
@@ -1744,14 +1745,15 @@ function _civicrm_api3_getValidDate($dateValue, $fieldName, $fieldType) {
  */
 function _civicrm_api3_validate_constraint($fieldValue, $fieldName, $fieldInfo, $entity) {
   $daoName = $fieldInfo['FKClassName'];
+  $fkColumnName = $fieldInfo['FKColumnName'] ?? 'id';
   $fieldInfo = [$fieldName => $fieldInfo];
   $params = [$fieldName => $fieldValue];
   _civicrm_api3_validate_fields($entity, NULL, $params, $fieldInfo);
   /** @var CRM_Core_DAO $dao */
   $dao = new $daoName();
-  $dao->id = $params[$fieldName];
+  $dao->$fkColumnName = $params[$fieldName];
   $dao->selectAdd();
-  $dao->selectAdd('id');
+  $dao->selectAdd($fkColumnName);
   if (!$dao->find()) {
     throw new CRM_Core_Exception("$fieldName is not valid : " . $fieldValue);
   }
@@ -2235,7 +2237,7 @@ function _civicrm_api3_validate_html(&$params, &$fieldName, $fieldInfo) {
  * @throws Exception
  */
 function _civicrm_api3_validate_string(&$params, &$fieldName, &$fieldInfo, $entity, $action) {
-  $isGet = substr($action, 0, 3) === 'get';
+  $isGet = substr($action ?? '', 0, 3) === 'get';
   [$fieldValue, $op] = _civicrm_api3_field_value_check($params, $fieldName, 'String');
   if (str_contains(($op ?? ''), 'NULL') || str_contains(($op ?? ''), 'EMPTY') || CRM_Utils_System::isNull($fieldValue)) {
     return;

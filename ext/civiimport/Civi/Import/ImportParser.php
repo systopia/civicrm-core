@@ -561,6 +561,13 @@ abstract class ImportParser extends \CRM_Import_Parser {
    * @throws \CRM_Core_Exception
    */
   protected function getContactID(array $contactParams, ?int $contactID, string $entity, ?array $dedupeRules = NULL): ?int {
+    if ($contactID && !isset($contactParams['is_deleted'])) {
+      // The contact may have been merged since the contact ID was determined (common in cases where
+      // a list of contacts is exported and then some time later imported with augmented data.
+      // As long as is_deleted is not set (ie the importer is not trying to undelete the contact) we can
+      // use the merged to contact instead, if it exists.
+      $contactID = $this->getMergedToContactIfDeleted($contactID);
+    }
     $contactType = $contactParams['contact_type'] ?? NULL;
     if ($contactID) {
       $this->validateContactID($contactID, $contactType);
@@ -574,19 +581,16 @@ abstract class ImportParser extends \CRM_Import_Parser {
       if (count($possibleMatches) === 1) {
         $contactID = array_key_first($possibleMatches);
       }
-      elseif (count($possibleMatches) > 1) {
-        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(',', $possibleMatches));
+      elseif (count($possibleMatches) === 2) {
+        $mergeUrl = \CRM_Utils_System::url('civicrm/contact/merge', ['reset' => 1, 'action' => 'update', 'cid' => array_key_first($possibleMatches), 'oid' => array_key_last($possibleMatches)]);
+        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(', ', $possibleMatches) . '<br /><a href="' . $mergeUrl . '" target="_blank">' . ts('Merge contacts') . '</a>');
+      }
+      elseif (count($possibleMatches) > 2) {
+        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(', ', $possibleMatches));
       }
       elseif (!in_array($action, ['create', 'ignore', 'save'], TRUE)) {
         throw new \CRM_Core_Exception(ts('No matching %1 found', [1 => $entity]));
       }
-    }
-    if ($contactID && !isset($contactParams['is_deleted'])) {
-      // The contact may have been merged since the contact ID was determined (common in cases where
-      // a list of contacts is exported and then some time later imported with augmented data.
-      // As long as is_deleted is not set (ie the importer is not trying to undelete the contact) we can
-      // use the merged to contact instead, if it exists.
-      $contactID = $this->getMergedToContactIfDeleted($contactID);
     }
     return $contactID;
   }

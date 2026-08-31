@@ -200,7 +200,8 @@ class CRM_Core_BAO_SchemaHandler {
 
     // Add index if field is searchable if it does not reference a foreign key
     // (skip indexing FK fields because it would be redundant to have 2 indexes)
-    if (!empty($params['searchable']) && empty($params['fk_table_name']) && !$searchIndexExists) {
+    // Also do not add an index if it is a searlizable column
+    if (!empty($params['searchable']) && empty($params['fk_table_name']) && !$searchIndexExists && empty($params['serialize'])) {
       $indexName = $params['name'];
       if ($params['type'] === 'text' || self::getFieldLength($params['type']) > self::MAX_INDEX_LENGTH) {
         $indexName .= '(' . self::MAX_INDEX_LENGTH . ')';
@@ -210,8 +211,8 @@ class CRM_Core_BAO_SchemaHandler {
       $sql .= $prefix;
       $sql .= "index_{$params['name']} ( $indexName )";
     }
-    // Drop search index if field is no longer searchable
-    elseif (empty($params['searchable']) && $searchIndexExists) {
+    // Drop search index if field is no longer searchable OR is a serialized column
+    elseif ($searchIndexExists && (empty($params['searchable']) || !empty($params['serialize']))) {
       $sql .= $separator;
       $sql .= str_repeat(' ', 8);
       $sql .= "DROP INDEX $existingIndex";
@@ -476,11 +477,16 @@ ADD UNIQUE INDEX `unique_entity_id` ( `entity_id` )";
    *
    * @param string $tableName
    * @param string $indexName
+   *
+   * @return bool
+   *   TRUE if the index was dropped, FALSE otherwise.
    */
-  public static function dropIndexIfExists($tableName, $indexName) {
+  public static function dropIndexIfExists($tableName, $indexName): bool {
     if (self::checkIfIndexExists($tableName, $indexName)) {
       CRM_Core_DAO::executeQuery("DROP INDEX $indexName ON $tableName");
+      return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -858,6 +864,19 @@ MODIFY      {$columnName} varchar( $length )
         ];
       }
     }
+
+    $schemaHelper = \Civi::schemaHelper();
+
+    // Drop non-numeric foreign keys. See dev/core#6684
+    // In MariaDB, ALTER TABLE statements that change charset/collation on a column used
+    // in a foreign key constraint fail if the referenced table/column is still on the old
+    // collation, even when FOREIGN_KEY_CHECKS = 0.
+    $nonNumericForeignKeys = self::getNonNumericForeignKeys();
+    foreach ($nonNumericForeignKeys as $key) {
+      $schemaHelper->dropForeignKey($key['table'], $key['name']);
+    }
+
+    CRM_Core_DAO::executeQuery('SET FOREIGN_KEY_CHECKS = 0', [], TRUE, NULL, FALSE, FALSE);
     foreach ($tables as $table => $param) {
       $query = "ALTER TABLE $table";
       $dao = CRM_Core_DAO::executeQuery("SHOW FULL COLUMNS FROM $table", [], TRUE, NULL, FALSE, FALSE);
@@ -904,6 +923,13 @@ MODIFY      {$columnName} varchar( $length )
       // Disable i18n rewrite.
       CRM_Core_DAO::executeQuery($query, $params, TRUE, NULL, FALSE, FALSE);
     }
+    CRM_Core_DAO::executeQuery('SET FOREIGN_KEY_CHECKS = 1', [], TRUE, NULL, FALSE, FALSE);
+
+    // Restore non-numeric foreign keys
+    foreach ($nonNumericForeignKeys as $key) {
+      $schemaHelper->createForeignKey($key['table'], $key['field'], $key['spec']);
+    }
+
     // Rebuild triggers and other schema reconciliation if needed.
     $logging = new CRM_Logging_Schema();
     $logging->fixSchemaDifferences();
@@ -1031,6 +1057,39 @@ MODIFY      {$columnName} varchar( $length )
       return substr($sqlType, $open + 1, -1);
     }
     return NULL;
+  }
+
+  /**
+   * Get metadata for all non-numeric foreign keys across core and active extensions.
+   *
+   * @return array
+   */
+  public static function getNonNumericForeignKeys(): array {
+    $keys = [];
+    foreach (\Civi\Schema\EntityRepository::getEntities() as $entityName => $entity) {
+      if (empty($entity['table'])) {
+        continue;
+      }
+      foreach (\Civi::entity($entityName)->getFields() as $fieldName => $fieldSpec) {
+        $ref = $fieldSpec['entity_reference'] ?? NULL;
+        if (empty($ref['entity']) || empty($ref['key']) || ($ref['fk'] ?? TRUE) === FALSE) {
+          continue;
+        }
+        $refFieldSpec = \Civi::entity($ref['entity'])->getField($ref['key']);
+        if (!$refFieldSpec || in_array(CRM_Utils_Schema::getDataType($refFieldSpec), ['Integer', 'Float', 'Money'])) {
+          continue;
+        }
+
+        $tableName = $entity['table'];
+        $keys[] = [
+          'table' => $tableName,
+          'field' => $fieldName,
+          'name' => 'FK_' . self::getIndexName($tableName, $fieldName),
+          'spec' => $fieldSpec,
+        ];
+      }
+    }
+    return $keys;
   }
 
 }

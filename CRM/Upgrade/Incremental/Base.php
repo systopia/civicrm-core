@@ -419,11 +419,14 @@ class CRM_Upgrade_Incremental_Base {
       $fieldSql .= " $position";
     }
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists($tableName, $fieldName)) {
-      return self::alterColumn($ctx, $tableName, $fieldName, $fieldSql, !empty($fieldSpec['localizable']));
+      self::alterColumn($ctx, $tableName, $fieldName, $fieldSql, !empty($fieldSpec['localizable']));
     }
     else {
-      return self::addColumn($ctx, $tableName, $fieldName, $fieldSql, !empty($fieldSpec['localizable']), $version, $triggerRebuild);
+      self::addColumn($ctx, $tableName, $fieldName, $fieldSql, !empty($fieldSpec['localizable']), $version, $triggerRebuild);
     }
+    Civi::schemaHelper()->dropForeignKeysForColumn($tableName, $fieldName);
+    Civi::schemaHelper()->createForeignKey($tableName, $fieldName, $fieldSpec);
+    return TRUE;
   }
 
   /**
@@ -638,6 +641,7 @@ class CRM_Upgrade_Incremental_Base {
    */
   public static function dropColumn($ctx, $table, $column) {
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists($table, $column)) {
+      Civi::schemaHelper()->dropForeignKeysForColumn($table, $column);
       CRM_Core_DAO::executeQuery("ALTER TABLE `$table` DROP COLUMN `$column`",
         [], TRUE, NULL, FALSE, FALSE);
     }
@@ -665,6 +669,16 @@ class CRM_Upgrade_Incremental_Base {
     $tables = [$table => (array) $columns];
     CRM_Core_BAO_SchemaHandler::createIndexes($tables, $prefix);
 
+    return TRUE;
+  }
+
+  /**
+   * Create any missing Full Text Search indices
+   *
+   * NOTE: if FTS is turned off, this will do nothing
+   */
+  public static function createMissingFtsIndices(): bool {
+    \Civi::service('civi.schema.fts')->createIndices();
     return TRUE;
   }
 

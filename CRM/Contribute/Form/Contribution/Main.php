@@ -495,6 +495,9 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
    * @return string
    */
   public function getPayLaterLabel(): string {
+    if (!$this->getContributionPageValue('is_pay_later')) {
+      return '';
+    }
     return (string) $this->getContributionPageValue('pay_later_text');
   }
 
@@ -541,7 +544,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
           }
         }
         if (!empty($options)) {
-          $label = (!empty($this->_membershipBlock) && $field['name'] === 'contribution_amount') ? ts('Additional Contribution') : $field['label'];
           $extra = [];
           $fieldID = (int) $field['id'];
           if ($fieldID === $this->getPriceFieldOtherID()) {
@@ -572,7 +574,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             $field['id'],
             FALSE,
             $field['is_required'] ?? FALSE,
-            $label,
+            $field['label'],
             $options,
             [],
             $extra
@@ -1316,8 +1318,14 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       return;
     }
 
-    $this->assign('taxAmount', $this->getContributionValue('tax_amount'));
-    $this->assign('taxTerm', Civi::settings()->get('tax_term'));
+    $taxAmount = $this->getContributionValue('tax_amount');
+    $taxTerm = trim((string) Civi::settings()->get('tax_term'));
+
+    // Only display the tax note when both values are meaningful. This prevents
+    // output like "(includes  of $0.00)" when there is no tax, or when the tax
+    // term has not been configured.
+    $this->assign('taxAmount', (float) CRM_Utils_Rule::cleanMoney($taxAmount ?? '0') > 0 ? $taxAmount : NULL);
+    $this->assign('taxTerm', $taxTerm ?: NULL);
 
     $lineItems = $this->getExistingContributionLineItems();
     $this->assign('lineItem', [$this->getPriceSetID() => $lineItems]);

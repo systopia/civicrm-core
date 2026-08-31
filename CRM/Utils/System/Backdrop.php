@@ -696,6 +696,16 @@ AND    u.status = 1
   /**
    * @inheritDoc
    */
+  public function cmsSitePath() {
+    if (defined('BACKDROP_ROOT')) {
+      $cmsSitePath = realpath(BACKDROP_ROOT . '/' . conf_path());
+      return $cmsSitePath;
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function isUserLoggedIn() {
     $isloggedIn = FALSE;
     if (function_exists('user_is_logged_in')) {
@@ -784,24 +794,6 @@ AND    u.status = 1
   }
 
   /**
-   * Find any users/roles/security-principals with the given permission
-   * and replace it with one or more permissions.
-   *
-   * @param string $oldPerm
-   * @param array $newPerms
-   *   Array, strings.
-   */
-  public function replacePermission($oldPerm, $newPerms) {
-    $roles = user_roles(FALSE, $oldPerm);
-    if (!empty($roles)) {
-      foreach (array_keys($roles) as $rid) {
-        user_role_revoke_permissions($rid, [$oldPerm]);
-        user_role_grant_permissions($rid, $newPerms);
-      }
-    }
-  }
-
-  /**
    * @inheritdoc
    */
   public function getCiviSourceStorage():array {
@@ -827,50 +819,6 @@ AND    u.status = 1
       'url' => CRM_Utils_File::addTrailingSlash($userFrameworkResourceURL, '/'),
       'path' => CRM_Utils_File::addTrailingSlash($civicrm_root),
     ];
-  }
-
-  /**
-   * Wrapper for og_membership creation.
-   *
-   * @param int $ogID
-   *   Organic Group ID.
-   * @param int $userID
-   *   Backdrop User ID.
-   */
-  public function og_membership_create($ogID, $userID) {
-    if (function_exists('og_entity_query_alter')) {
-      // sort-of-randomly chose a function that only exists in the // 7.x-2.x branch
-      //
-      // @TODO Find more solid way to check - try system_get_info('module', 'og').
-      //
-      // Also, since we don't know how to get the entity type of the // group, we'll assume it's 'node'
-      og_group('node', $ogID, ['entity' => user_load($userID)]);
-    }
-    else {
-      // Works for the OG 7.x-1.x branch
-      og_group($ogID, ['entity' => user_load($userID)]);
-    }
-  }
-
-  /**
-   * Wrapper for og_membership deletion.
-   *
-   * @param int $ogID
-   *   Organic Group ID.
-   * @param int $userID
-   *   Backdrop User ID.
-   */
-  public function og_membership_delete($ogID, $userID) {
-    if (function_exists('og_entity_query_alter')) {
-      // sort-of-randomly chose a function that only exists in the 7.x-2.x branch
-      // TODO: Find a more solid way to make this test
-      // Also, since we don't know how to get the entity type of the group, we'll assume it's 'node'
-      og_ungroup('node', $ogID, 'user', user_load($userID));
-    }
-    else {
-      // Works for the OG 7.x-1.x branch
-      og_ungroup($ogID, 'user', user_load($userID));
-    }
   }
 
   /**

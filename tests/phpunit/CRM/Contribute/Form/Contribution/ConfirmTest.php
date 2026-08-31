@@ -39,6 +39,7 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
    */
   public function tearDown(): void {
     $this->quickCleanUpFinancialEntities();
+    $this->quickCleanup(['civicrm_relationship']);
     parent::tearDown();
   }
 
@@ -131,6 +132,115 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
     $this->assertMatchesRegularExpression("/Paid later via page ID: $contributionPageID2/", $contribution['source']);
     // check that contribution status is changed to 'Completed' from 'Pending'
     $this->assertEquals('Completed', $contribution['contribution_status_id:name']);
+  }
+
+  /**
+   * Test that paying an existing contribution online does not overwrite its
+   * receive_date with today's date.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testPayNowPaymentDoesNotOverwriteReceiveDate(): void {
+    $originalReceiveDate = '2020-03-04 05:06:07';
+
+    $individualID = $this->createLoggedInUser();
+    $paymentProcessorID = $this->paymentProcessorCreate(['payment_processor_type_id' => 'Dummy', 'is_test' => FALSE], 'dummy');
+    $this->setDummyProcessorResult([
+      'payment_status_id' => 1,
+      'payment_status' => 'Completed',
+      'receive_date' => date('Y-m-d H:i:s'),
+      'trxn_id' => 'pay-now-preserves-date',
+    ]);
+
+    // The page the original (pending) contribution was created against.
+    $contributionPageID1 = $this->createContributionPage(['payment_processor' => $paymentProcessorID]);
+
+    $contribution = $this->createTestEntity('Contribution', [
+      'contact_id' => $individualID,
+      'financial_type_id:name' => 'Campaign Contribution',
+      'currency' => 'USD',
+      'total_amount' => 100.00,
+      'receive_date' => $originalReceiveDate,
+      'contribution_status_id:name' => 'Pending',
+      'contribution_page_id' => $contributionPageID1,
+      'source' => 'backoffice pending contribution',
+    ]);
+
+    // Sanity check - the date we asked for is the date that got stored.
+    $this->assertEquals($originalReceiveDate, Contribution::get(FALSE)
+      ->addWhere('id', '=', $contribution['id'])
+      ->addSelect('receive_date')
+      ->execute()->single()['receive_date']);
+
+    // A different page, used to take the payment.
+    $contributionPageID2 = $this->createContributionPage(['payment_processor' => $paymentProcessorID]);
+
+    $this->submitOnlineContributionForm([
+      'credit_card_number' => 4111111111111111,
+      'cvv2' => 234,
+      'credit_card_exp_date' => [
+        'M' => 2,
+        'Y' => (int) (CRM_Utils_Time::date('Y')) + 1,
+      ],
+      $this->getPriceFieldLabelForContributionPage($contributionPageID2) => 100,
+      'credit_card_type' => 'Visa',
+      'email-5' => 'test@test.com',
+      'payment_processor_id' => $paymentProcessorID,
+    ], $contributionPageID2, ['ccid' => $contribution['id']]);
+
+    $contribution = Contribution::get(FALSE)
+      ->addWhere('id', '=', $contribution['id'])
+      ->addSelect('receive_date', 'contribution_page_id', 'contribution_status_id:name', 'total_amount')
+      ->execute()->single();
+
+    // The whole point of this test - the historic date survives the payment.
+    $this->assertEquals($originalReceiveDate, $contribution['receive_date']);
+    // And the rest of the CRM-21200 protections still hold.
+    $this->assertEquals($contributionPageID1, $contribution['contribution_page_id']);
+    $this->assertEquals('Completed', $contribution['contribution_status_id:name']);
+    $this->assertEquals(100.00, $contribution['total_amount']);
+
+    // The payment itself is recorded against today, not against the original
+    // receive_date - the money did arrive today.
+    $payment = $this->callAPISuccess('Payment', 'get', [
+      'contribution_id' => $contribution['id'],
+      'sequential' => 1,
+      'version' => 3,
+    ])['values'][0];
+    $this->assertEquals(date('Y-m-d'), substr($payment['trxn_date'], 0, 10));
+  }
+
+  /**
+   * Test that a brand new contribution created through a contribution page
+   * still gets receive_date = now.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testNewOnlineContributionReceiveDateIsToday(): void {
+    $this->createLoggedInUser();
+    $paymentProcessorID = $this->paymentProcessorCreate(['payment_processor_type_id' => 'Dummy', 'is_test' => FALSE], 'dummy');
+    $contributionPageID = $this->createContributionPage(['payment_processor' => $paymentProcessorID]);
+
+    $this->submitOnlineContributionForm([
+      'credit_card_number' => 4111111111111111,
+      'cvv2' => 234,
+      'credit_card_exp_date' => [
+        'M' => 2,
+        'Y' => (int) (CRM_Utils_Time::date('Y')) + 1,
+      ],
+      $this->getPriceFieldLabelForContributionPage($contributionPageID) => 60,
+      'credit_card_type' => 'Visa',
+      'email-5' => 'test@test.com',
+      'payment_processor_id' => $paymentProcessorID,
+    ], $contributionPageID);
+
+    $contribution = Contribution::get(FALSE)
+      ->addWhere('contribution_page_id', '=', $contributionPageID)
+      ->addSelect('receive_date', 'total_amount')
+      ->execute()->single();
+
+    $this->assertEquals(date('Y-m-d'), substr($contribution['receive_date'], 0, 10));
+    $this->assertEquals(60, $contribution['total_amount']);
   }
 
   public function testOnBehalf(): void {
@@ -1393,15 +1503,7 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
       $this->callAPISuccess('UFField', 'create', $params);
     }
     $this->contributionPageWithPriceSetCreate();
-    $this->callAPISuccess('UFJoin', 'create', [
-      'is_active' => 1,
-      'module' => 'CiviEvent',
-      'entity_table' => 'civicrm_event',
-      'entity_id' => $this->getContributionPageID(),
-      'weight' => 1,
-      'uf_group_id' => 1,
-    ]);
-    $this->callAPISuccess('UFJoin', 'create', [
+    $this->createTestEntity('UFJoin', [
       'is_active' => 1,
       'module' => 'soft_credit',
       'entity_table' => 'civicrm_contribution_page',
@@ -1419,7 +1521,11 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
           ],
         ],
       ],
-    ]);
+    ], 'tribute');
+    // To replicate https://lab.civicrm.org/dev/core/-/work_items/6403 alter the natural sort order
+    // by forcing the pre profile join id higher than the soft_credit / honoree profile ID.
+    $newID = $this->ids['UFJoin']['tribute'] + 1;
+    CRM_Core_DAO::executeQuery('UPDATE civicrm_uf_join SET id = ' . $newID . ' WHERE weight = 1 AND module = "CiviContribute"');
     $processor = \Civi\Payment\System::singleton()->getById($this->ids['PaymentProcessor']['dummy']);
     $processor->setDoDirectPaymentResult(['payment_status_id' => 1, 'fee_amount' => .72]);
     $this->submitOnlineContributionForm([
@@ -1444,6 +1550,8 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
         'In Memory of',
         'Name    James Bond',
         'Vaxhaul Cross',
+        'Public Page Pre Profile',
+        'email	dave@example.com',
       ],
     );
   }
@@ -1452,9 +1560,12 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
    * Basic setup for membership tests.
    * @return array
    */
-  public function setupMembershipContributionPage(): array {
-    $this->createLoggedInUser();
-    $this->individualCreate([], 'member');
+  public function setupMembershipContributionPage($isLoggedIn = TRUE): array {
+    if ($isLoggedIn) {
+      $this->createLoggedInUser();
+    }
+    $this->individualCreate([], 'member_other');
+    $this->individualCreate(['first_name' => 'Dave', 'last_name' => 'Wong', 'email_primary.email' => 'dave@example.com'], 'member');
     $this->restoreMembershipTypes();
     $membershipTypes = \CRM_Member_BAO_MembershipType::getAllMembershipTypes();
     // Make sure the MembershipType ids are set as restoreMembershipTypes just uses Api4 to create the types.
@@ -1468,6 +1579,14 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
     }
     $this->contributionPageQuickConfigCreate([], [], FALSE, TRUE, TRUE, TRUE, 'existingMemberPage');
     $year = (int) (CRM_Utils_Time::date('Y')) - 1;
+    // Create a membership against another contact to check it is not 'stolen'.
+    $this->createTestEntity('Membership', [
+      'membership_type_id:name' => 'Student',
+      'contact_id' => $this->ids['Contact']['member_other'],
+      'start_date' => $year . '-01-02',
+      'join_date' => $year . '-01-02',
+      'end_date' => $year . '-12-31',
+    ], 'other_member');
     $original_membership = Membership::create(FALSE)
       ->addValue('membership_type_id:name', 'Student')
       ->addValue('contact_id', $this->ids['Contact']['member'])
@@ -1518,6 +1637,33 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
     $expectedDate = date('Y-m-d', strtotime($original_membership['end_date']));
     // Make sure that the end data hasn't changed since payment failed.
     $this->assertEquals($expectedDate, $membership['end_date']);
+  }
+
+  /**
+   * Test to make sure that a membership renewal finds the membership on the contact to renew.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testSubmitMembershipRenewalSuccessMatchCorrectContact() : void {
+    $items = $this->setupMembershipContributionPage(FALSE);
+    $original_membership = $items['original_membership'];
+    $this->submitOnlineContributionForm([
+      'payment_processor_id' => $this->ids['PaymentProcessor']['dummy'],
+      'price_' . $this->ids['PriceField']['contribution_amount'] => -1,
+      'price_' . $this->ids['PriceField']['membership_amount'] => $this->ids['PriceFieldValue']['membership_student'],
+    ] + $this->getBillingSubmitValues(), $this->getContributionPageID('existingMemberPage'));
+    // Make sure the other membership was not renewed.
+    $otherMembership = Membership::get(FALSE)
+      ->addWhere('contact_id', '=', $this->ids['Contact']['member_other'])
+      ->execute()
+      ->first();
+    $this->assertEquals(strtotime($original_membership['end_date']), strtotime($otherMembership['end_date']));
+    $membership = Membership::get(FALSE)
+      ->addWhere('contact_id', '=', $this->ids['Contact']['member'])
+      ->execute()
+      ->first();
+    // Make sure that the right membership was renewed.
+    $this->assertGreaterThan(strtotime($original_membership['end_date']), strtotime($membership['end_date']));
   }
 
   /**
@@ -2171,6 +2317,30 @@ class CRM_Contribute_Form_Contribution_ConfirmTest extends CiviUnitTestCase {
       'Membership Fee',
       '$2.00',
     ], 1);
+  }
+
+  /**
+   * Test that emailed receipt for quick-config contribution page does not contain ASCII 0x01 (SOH) characters.
+   */
+  public function testQuickConfigEmailedReceiptNoASCII0x01(): void {
+    $this->contributionPageQuickConfigCreate(
+      ['is_email_receipt' => 1],
+      [],
+      FALSE,
+      FALSE,
+      TRUE,
+      FALSE
+    );
+
+    $this->submitOnlineContributionForm([
+      'payment_processor_id' => $this->ids['PaymentProcessor']['dummy'],
+      'price_' . $this->ids['PriceField']['contribution_amount'] => $this->ids['PriceFieldValue']['contribution_amount_15'],
+      'id' => $this->getContributionPageID(),
+      'email-5' => 'donor@example.com',
+    ] + $this->getBillingSubmitValues(), $this->getContributionPageID());
+
+    $this->assertMailSentCount(1);
+    $this->assertMailSentNotContainingString(CRM_Core_DAO::VALUE_SEPARATOR);
   }
 
 }

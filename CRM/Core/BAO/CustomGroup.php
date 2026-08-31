@@ -88,6 +88,39 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements Event
   }
 
   /**
+   * Get the number of value columns in the value table for this CustomGroup
+   * - this will prevent automatic cleanup of the CustomGroup if there is data for it
+   */
+  public static function on_hook_civicrm_referenceCounts($e) {
+    $dao = $e->dao;
+    if (!is_a($dao, \CRM_Core_DAO_CustomGroup::class)) {
+      return;
+    }
+    $dao->find(TRUE);
+    $tableName = $dao->table_name;
+
+    $dbName = $dao->_database;
+    $tableColumns = intval(\CRM_Core_DAO::singleValueQuery("
+     SELECT COUNT(1)
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = '{$dbName}'
+         AND TABLE_NAME = '{$tableName}'
+    "));
+
+    // custom value tables always have `id` and `entity_id` but these are meaningless
+    // by themselves - count how many more columns it has
+    $valueColumns = $tableColumns - 2;
+
+    if ($valueColumns) {
+      $e->refCounts[] = [
+        'type' => 'sql',
+        'name' => 'custom_group_value_table_value_columns',
+        'count' => $valueColumns,
+      ];
+    }
+  }
+
+  /**
    * Retrieve a group by id, name, etc.
    *
    * @param array $filter
@@ -310,13 +343,9 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements Event
     }
     else {
       if (!empty($params['name'])) {
-        $params['name'] = CRM_Utils_String::munge($params['name']);
+        $params['name'] = CRM_Utils_String::munge($params['name'], '_', 64);
+        self::validateCustomGroupName($params);
       }
-      else {
-        $params['name'] = CRM_Utils_String::munge($params['title']);
-      }
-
-      self::validateCustomGroupName($params);
 
       if (isset($params['table_name'])) {
         $tableName = $params['table_name'];
@@ -1195,7 +1224,7 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements Event
       return [];
     }
 
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree($type, [], NULL, NULL, [], NULL, TRUE, NULL, TRUE);
+    $groupTree = self::getAll(['extends' => $type, 'is_active' => TRUE, 'style' => 'Inline']);
     $customValue = [];
     $htmlType = [
       'CheckBox',
@@ -1581,6 +1610,12 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements Event
       $gID,
       'table_name'
     );
+
+    // Guard against missing tables (e.g. orphaned custom group records
+    // where the backing table was dropped but the group record remains).
+    if (!CRM_Core_DAO::checkTableExists($tableName)) {
+      return TRUE;
+    }
 
     $query = "SELECT count(id) FROM {$tableName} WHERE id IS NOT NULL LIMIT 1";
     $value = CRM_Core_DAO::singleValueQuery($query);

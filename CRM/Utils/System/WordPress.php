@@ -45,6 +45,21 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     $this->registerPathVars();
   }
 
+  public function isFrontEndPage() {
+    // check to see if we are on the front end of WP.  Ensure function exists in case we are running cron via cli
+    if (function_exists('is_admin') && !is_admin()) {
+      return TRUE;
+    }
+
+    $path = CRM_Utils_System::currentPath() ?? '';
+
+    // Get the menu for above URL.
+    $item = CRM_Core_Menu::get($path);
+
+    // frontend page have no path so empty item
+    return !isset($item) || (isset($item['is_public']) && $item['is_public']);
+  }
+
   /**
    * Specify the default computation for various paths/URLs.
    */
@@ -62,8 +77,9 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
       Civi::paths()->register('cms', $cmsRoot);
       Civi::paths()->register('cms.root', $cmsRoot);
       Civi::paths()->register('civicrm.root', function () {
+        global $civicrm_root;
         return [
-          'path' => CIVICRM_PLUGIN_DIR . 'civicrm' . DIRECTORY_SEPARATOR,
+          'path' => $civicrm_root,
           'url' => CIVICRM_PLUGIN_URL . 'civicrm/',
         ];
       });
@@ -866,6 +882,19 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
       'role' => get_option('default_role'),
     ];
 
+    // dev/core#6411 check to see if the wordpress user has already been created via some other method
+    $email_check = get_user_by('email', $user_data['user_email']);
+    if ($email_check) {
+      /** @var WP_User $email_check */
+      return $email_check->ID;
+    }
+
+    $user_name_check = get_user_by('login', $user_data['user_login']);
+    if ($user_name_check) {
+      /** @var WP_User $user_name_check */
+      return $user_name_check->ID;
+    }
+
     /*
      * The notify parameter was ignored on WordPress and default behaviour
      * was to always notify. Preserve that behaviour but allow the "notify"
@@ -998,29 +1027,6 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
         wp_update_user($values);
       }
     }
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getEmailFieldName(CRM_Core_Form $form, array $fields):string {
-    $emailName = '';
-    $billingLocationTypeID = CRM_Core_BAO_LocationType::getBilling();
-    if (array_key_exists("email-{$billingLocationTypeID}", $fields)) {
-      // this is a transaction related page
-      $emailName = 'email-' . $billingLocationTypeID;
-    }
-    else {
-      // find the email field in a profile page
-      foreach ($fields as $name => $dontCare) {
-        if (str_starts_with($name, 'email')) {
-          $emailName = $name;
-          break;
-        }
-      }
-    }
-
-    return $emailName;
   }
 
   /**

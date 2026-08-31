@@ -1187,6 +1187,10 @@ class CRM_Core_SelectValues {
         'label' => ts('Last Name'),
       ],
       [
+        'key' => 'legal_name',
+        'label' => ts('Legal Name'),
+      ],
+      [
         'key' => 'Email.email',
         'label' => ts('Email'),
         'adv_search_legacy' => 'email',
@@ -1223,6 +1227,24 @@ class CRM_Core_SelectValues {
       [
         'key' => 'job_title',
         'label' => ts('Job Title'),
+      ],
+      [
+        'key' => 'Contribution.id',
+        'label' => ts('Contribution ID'),
+        'join' => ['Contribution AS Contribution', 'LEFT', ['Contribution.contact_id', '=', 'id']],
+        'adv_search_legacy' => 'contribution_id',
+      ],
+      [
+        'key' => 'Contribution.trxn_id',
+        'label' => ts('Transaction ID'),
+        'join' => ['Contribution AS Contribution', 'LEFT', ['Contribution.contact_id', '=', 'id']],
+        'adv_search_legacy' => 'contribution_trxn_id',
+      ],
+      [
+        'key' => 'Contribution.invoice_number',
+        'label' => ts('Invoice Number'),
+        'join' => ['Contribution AS Contribution', 'LEFT', ['Contribution.contact_id', '=', 'id']],
+        'adv_search_legacy' => 'invoice_number',
       ],
     ];
     $customGroups = CRM_Core_BAO_CustomGroup::getAll(['extends' => 'Contact', 'is_active' => TRUE], CRM_Core_Permission::VIEW);
@@ -1351,6 +1373,16 @@ class CRM_Core_SelectValues {
   }
 
   /**
+   * TODO: Support more ops like 'INTERSECT' & 'EXCEPT' when moving to MySQL 8.
+   */
+  public static function setOperations(): array {
+    return [
+      'UNION ALL' => ts('Union All'),
+      'UNION DISTINCT' => ts('Union Distinct'),
+    ];
+  }
+
+  /**
    * Callback for Role.permissions pseudoconstant values.
    *
    * Permissions for Civi Standalone, not used by CMS-based systems.
@@ -1380,6 +1412,17 @@ class CRM_Core_SelectValues {
       'combined' => ts('One combined activity'),
       'combined-attached' => ts('One combined activity plus one file attachment'),
       // 'multiple-attached' <== not worth the work
+    ];
+  }
+
+  /**
+   * Options for UFGroup.is_cms_user
+   */
+  public static function profileUserRegistrationMode(): array {
+    return [
+      0 => ts('Disabled'),
+      1 => ts('Enabled, but not required'),
+      2 => ts('Required'),
     ];
   }
 

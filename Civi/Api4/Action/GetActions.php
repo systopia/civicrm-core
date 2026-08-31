@@ -34,9 +34,10 @@ class GetActions extends BasicGetAction {
 
     $className = CoreUtil::getApiClass($this->_entityName);
     $entityReflection = new \ReflectionClass($className);
-    foreach ($entityReflection->getMethods(\ReflectionMethod::IS_STATIC | \ReflectionMethod::IS_PUBLIC) as $method) {
+    foreach ($entityReflection->getMethods(\ReflectionMethod::IS_STATIC) as $method) {
       $actionName = $method->getName();
-      if (!in_array($actionName, ['permissions', 'getInfo', 'getEntityName'], TRUE) && !str_starts_with($actionName, '_')) {
+      // Filter out non-public methods (if the name begins with an underscore, it's not considered public)
+      if ($method->isPublic() && !in_array($actionName, ['permissions', 'getInfo', 'getEntityName'], TRUE) && !str_starts_with($actionName, '_')) {
         $this->loadAction($actionName, $method);
       }
     }
@@ -108,6 +109,10 @@ class GetActions extends BasicGetAction {
           if ($this->_isFieldSelected('params')) {
             $this->_actions[$actionName]['params'] = $action->getParamInfo();
           }
+          // Only return ui_params if explicitly requested
+          if (in_array('ui_params', $this->select)) {
+            $this->_actions[$actionName]['ui_params'] = $action->getUiParams();
+          }
         }
       }
     }
@@ -138,6 +143,12 @@ class GetActions extends BasicGetAction {
         'name' => 'params',
         'description' => 'List of all accepted parameters',
         'data_type' => 'Array',
+      ],
+      [
+        'name' => 'ui_params',
+        'description' => 'Extra metadata about parameters exposed to the UI (e.g. in SearchKit)',
+        'data_type' => 'Array',
+        'type' => 'Extra',
       ],
       [
         'name' => 'deprecated',

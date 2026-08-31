@@ -39,9 +39,15 @@
             }
             return data.joins[self.entity];
           };
+
+          // Called by afRepeat
+          this.addRepeatItem = () => {
+            this.getData().push({});
+          };
+
           this.getFieldData = function() {
             const data = this.getData();
-            if (!data[this.offset]) {
+            if (!data[this.offset] || (Array.isArray(data[this.offset]) && !data[this.offset].length)) {
               data[this.offset] = {};
             }
             return data[this.offset];

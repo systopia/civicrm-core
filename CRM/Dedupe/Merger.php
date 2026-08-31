@@ -377,7 +377,8 @@ class CRM_Dedupe_Merger {
 INNER JOIN  civicrm_pledge_payment payment ON ( payment.contribution_id = contribution.id )
 INNER JOIN  civicrm_pledge pledge ON ( pledge.id = payment.pledge_id )
        SET  contribution.contact_id = $mainContactId
-     WHERE  pledge.contact_id = $otherContactId";
+     WHERE  pledge.contact_id = $otherContactId
+       AND  contribution.contact_id = $otherContactId";
         break;
 
       case 'civicrm_membership':
@@ -386,7 +387,8 @@ INNER JOIN  civicrm_pledge pledge ON ( pledge.id = payment.pledge_id )
 INNER JOIN  civicrm_line_item line ON ( line.contribution_id = contribution.id AND line.entity_table = 'civicrm_membership')
 INNER JOIN  civicrm_membership membership ON ( membership.id = line.entity_id )
        SET  contribution.contact_id = $mainContactId
-     WHERE  membership.contact_id = $otherContactId";
+     WHERE  membership.contact_id = $otherContactId
+       AND  contribution.contact_id = $otherContactId";
         break;
 
       case 'civicrm_participant':
@@ -395,7 +397,8 @@ INNER JOIN  civicrm_membership membership ON ( membership.id = line.entity_id )
 INNER JOIN  civicrm_line_item line ON ( line.contribution_id = contribution.id AND line.entity_table = 'civicrm_participant')
 INNER JOIN  civicrm_participant participant ON ( participant.id = line.entity_id )
        SET  contribution.contact_id = $mainContactId
-     WHERE  participant.contact_id = $otherContactId";
+     WHERE  participant.contact_id = $otherContactId
+       AND  contribution.contact_id = $otherContactId";
         break;
     }
 
@@ -1346,8 +1349,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
       if ($name === 'rel_table_users') {
         // @todo - this user url stuff is only needed for the form layer - move to CRM_Contact_Form_Merge
-        $relTables[$name]['main_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($mainID), $relTables[$name]['url']);
-        $relTables[$name]['other_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($otherID), $relTables[$name]['url']);
+        $relTables[$name]['main_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($mainID) ?? '', $relTables[$name]['url']);
+        $relTables[$name]['other_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($otherID) ?? '', $relTables[$name]['url']);
       }
       if ($name === 'rel_table_memberships') {
         //Enable 'add new' checkbox if main contact does not contain any membership similar to duplicate contact.
@@ -1721,6 +1724,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     $activity = civicrm_api3('activity', 'create', [
       'source_contact_id' => CRM_Core_Session::getLoggedInContactID() ? CRM_Core_Session::getLoggedInContactID() :
       $mainId,
+      'source_record_id' => $otherId,
       'subject' => ts('Contact ID %1 has been merged and deleted.', $params),
       'target_contact_id' => $mainId,
       'activity_type_id' => 'Contact Merged',
@@ -1733,6 +1737,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       civicrm_api3('activity', 'create', [
         'source_contact_id' => CRM_Core_Session::getLoggedInContactID() ? CRM_Core_Session::getLoggedInContactID() :
         $otherId,
+        'source_record_id' => $mainId,
         'subject' => ts('Contact ID %1 has been merged into Contact ID %2 and deleted.', $params),
         'target_contact_id' => $otherId,
         'activity_type_id' => 'Contact Deleted by Merge',

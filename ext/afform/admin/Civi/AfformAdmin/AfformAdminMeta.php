@@ -25,26 +25,24 @@ class AfformAdminMeta {
       ->setLoadOptions(['id', 'name', 'label', 'description', 'icon', 'color'])
       ->execute()->column(NULL, 'name');
     $afformPlacement = \CRM_Utils_Array::formatForSelect2(PlacementUtils::getPlacements(), 'label', 'value');
-    // Pluralize tabs (too bad option groups only store a single label)
-    $plurals = [
-      'form' => E::ts('Submission Forms'),
-      'search' => E::ts('Search Forms'),
-      'block' => E::ts('Field Blocks'),
-      'system' => E::ts('System Forms'),
-    ];
-    foreach ($afformFields['type']['options'] as &$afformType) {
-      $afformType['plural'] = $plurals[$afformType['name']] ?? \CRM_Utils_String::pluralize($afformType['label']);
-    }
+
     $containerStyles = (array) \Civi\Api4\OptionValue::get(FALSE)
       ->addSelect('value', 'label')
       ->addWhere('is_active', '=', TRUE)
       ->addWhere('option_group_id:name', '=', 'afform_container_style')
       ->addOrderBy('weight', 'ASC')
       ->execute();
+    $fieldStyles = (array) \Civi\Api4\OptionValue::get(FALSE)
+      ->addSelect('name', 'label', 'value', 'grouping')
+      ->addWhere('is_active', '=', TRUE)
+      ->addWhere('option_group_id:name', '=', 'afform_field_style')
+      ->addOrderBy('weight', 'ASC')
+      ->execute();
     return [
       'afform_fields' => $afformFields,
       'afform_placement' => $afformPlacement,
       'afform_container_style' => $containerStyles,
+      'field_styles' => $fieldStyles,
       'placement_entities' => array_column(PlacementUtils::getPlacements(), 'entities', 'value'),
       'placement_filters' => self::getPlacementFilterOptions(),
       'search_operators' => \Civi\Afform\Utils::getSearchOperators(),
@@ -96,9 +94,12 @@ class AfformAdminMeta {
   public static function getFields($entityName, $params = []) {
     $params += [
       'checkPermissions' => FALSE,
-      'loadOptions' => ['id', 'label'],
+      'loadOptions' => [
+        'id',
+        ...array_keys(\CRM_Core_SelectValues::optionAttributes()),
+      ],
       'action' => 'create',
-      'select' => ['name', 'label', 'input_type', 'input_attrs', 'required', 'options', 'help_pre', 'help_post', 'serialize', 'data_type', 'entity', 'fk_entity', 'readonly', 'operators'],
+      'select' => ['name', 'label', 'input_type', 'input_attrs', 'required', 'options', 'suffixes', 'help_pre', 'help_post', 'serialize', 'data_type', 'entity', 'fk_entity', 'dfk_entities', 'readonly', 'operators'],
       'where' => [['deprecated', '=', FALSE], ['input_type', 'IS NOT NULL']],
     ];
     if ($entityName === 'Address') {
@@ -198,7 +199,7 @@ class AfformAdminMeta {
    *
    * @return array
    */
-  public static function getMetadata() {
+  public static function getMetadata(): array {
     $data = \Civi::cache('metadata')->get('afform_admin.metadata');
     if (!$data) {
       $entities = [
@@ -215,25 +216,6 @@ class AfformAdminMeta {
         ->execute()->indexBy('name');
       foreach ($contactAndCustom as $name => $entity) {
         $entities[$name] = self::entityToAfformMeta($entity);
-      }
-
-      // Call getFields on getFields to get input type labels
-      $inputTypeLabels = \Civi\Api4\Contact::getFields(FALSE)
-        ->setLoadOptions(TRUE)
-        ->setAction('getFields')
-        ->addWhere('name', '=', 'input_type')
-        ->execute()
-        ->column('options')[0];
-      // Scan for input types, use label from getFields if available
-      $inputTypes = [];
-      foreach (glob(__DIR__ . '/../../ang/afGuiEditor/inputType/*.html') as $file) {
-        $name = basename($file, '.html');
-        $inputTypes[] = [
-          'name' => $name,
-          'label' => $inputTypeLabels[$name] ?? _ts($name),
-          'template' => '~/af/fields/' . $name . '.html',
-          'admin_template' => '~/afGuiEditor/inputType/' . $name . '.html',
-        ];
       }
 
       // Static elements
@@ -272,6 +254,17 @@ class AfformAdminMeta {
               ['#tag' => 'af-tab', 'title' => E::ts('Tab 1'), '#children' => []],
               ['#tag' => 'af-tab', 'title' => E::ts('Tab 2'), '#children' => []],
             ],
+          ],
+        ],
+        'pages' => [
+          'title' => E::ts('Pages'),
+          'element' => [
+            '#tag' => 'af-tabset',
+            '#children' => [
+              ['#tag' => 'af-tab', 'title' => E::ts('Page 1'), '#children' => []],
+              ['#tag' => 'af-tab', 'title' => E::ts('Page 2'), '#children' => []],
+            ],
+            'page-nav-buttons' => TRUE,
           ],
         ],
         'search_param_sets' => [
@@ -346,7 +339,7 @@ class AfformAdminMeta {
         'danger' => E::ts('Danger'),
       ];
 
-      $permissions = self::getPermissionList();
+      $permissions = \CRM_Core_Permission::getPermissionList(['afformGeneric', 'const', 'civicrm', 'cms', 'userRole']);
 
       $dateRanges = \CRM_Utils_Array::makeNonAssociative(\CRM_Core_OptionGroup::values('relative_date_filters'), 'id', 'label');
       $dateRanges = array_merge([['id' => '{}', 'label' => E::ts('Choose Date Range')]], $dateRanges);
@@ -357,7 +350,6 @@ class AfformAdminMeta {
       $data = [
         // @see afform-entity-php/mixin.php
         'entities' => &$entities,
-        'inputTypes' => &$inputTypes,
         'elements' => &$elements,
         'styles' => &$styles,
         'permissions' => &$permissions,
@@ -368,7 +360,15 @@ class AfformAdminMeta {
       \Civi::dispatcher()->dispatch('civi.afform_admin.metadata', $event);
       \Civi::cache('metadata')->set('afform_admin.metadata', $data);
     }
+    return $data;
+  }
 
+  public static function getModuleSettings(): array {
+    $data = self::getMetadata();
+    // InputTypes have their own hook and cache.
+    $inputTypes = Utils::getInputTypes();
+    // Convert to non-associative array.
+    $data['inputTypes'] = array_map(fn($inputType, $name) => $inputType + ['name' => $name], $inputTypes, array_keys($inputTypes));
     return $data;
   }
 
@@ -392,58 +392,23 @@ class AfformAdminMeta {
 
   private static function getLocales(): array {
     $options = [];
-    if (\CRM_Core_I18n::isMultiLingual()) {
-      $languages = \CRM_Core_I18n::languages();
-      $locales = \CRM_Core_I18n::getMultilingual();
-
+    $locales = \CRM_Core_I18n::uiLanguages();
+    if (count($locales) > 1) {
       if (\Civi::settings()->get('force_translation_source_locale') ?? TRUE) {
         $defaultLocale = \Civi::settings()->get('lcMessages');
-        $locales = [$defaultLocale];
+        $langLabel = $locales[$defaultLocale];
+        $locales = [];
+        $locales[$defaultLocale] = $langLabel;
       }
 
-      foreach ($locales as $index => $locale) {
+      foreach ($locales as $langCode => $langLabel) {
         $options[] = [
-          'id' => $locale,
-          'text' => $languages[$locale],
+          'id' => $langCode,
+          'text' => $langLabel,
         ];
       }
     }
     return $options;
-  }
-
-  /**
-   * Formats permissions into a nested list for Select2
-   *
-   * @return array[]
-   */
-  public static function getPermissionList(): array {
-    $perms = \Civi\Api4\Permission::get(FALSE)
-      ->addWhere('group', 'IN', ['afformGeneric', 'const', 'civicrm', 'cms', 'userRole'])
-      ->addWhere('is_active', '=', 1)
-      ->setOrderBy(['title' => 'ASC'])
-      ->execute();
-    $permissions = [];
-    $categories = [];
-    foreach ($perms as $perm) {
-      // By convention, permission labels begin with a category followed by a colon.
-      $titleParts = explode(':', $perm['title'], 2);
-      if (count($titleParts) === 1) {
-        array_unshift($titleParts, ts('Generic'));
-      }
-      $category = trim($titleParts[0]);
-      $categories[$category][] = [
-        'id' => $perm['name'],
-        'text' => ucfirst(trim($titleParts[1])),
-        'description' => $perm['description'] ?? NULL,
-      ];
-    }
-    foreach ($categories as $category => $perms) {
-      $permissions[] = [
-        'text' => $category,
-        'children' => $perms,
-      ];
-    }
-    return $permissions;
   }
 
 }
